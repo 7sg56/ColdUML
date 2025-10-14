@@ -4,7 +4,7 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Project Overview
 
-This is a Next.js 15 project called "cooluml" built with TypeScript, Tailwind CSS 4, and modern React 19. The project uses the new App Router architecture with Turbopack for fast development builds.
+This is a Next.js 15 project called "colduml" built with TypeScript, Tailwind CSS 4, and modern React 19. The project uses the new App Router architecture with Turbopack for fast development builds.
 
 ## Development Commands
 

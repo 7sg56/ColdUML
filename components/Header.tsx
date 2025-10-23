@@ -18,7 +18,7 @@ export default function Header({
       <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <h1 className="text-lg sm:text-xl font-semibold text-foreground truncate">
           <span className="hidden sm:inline">ColdUML</span>
-          <span className="sm:hidden">UML Editor</span>
+          <span className="sm:hidden">ColdUML</span>
         </h1>
       </div>
       

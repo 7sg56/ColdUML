@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useEditorState } from './AppStateProvider';
 
 export interface UMLTemplate {
   id: string;
@@ -62,8 +63,12 @@ const KEYBOARD_SHORTCUTS: Record<string, string> = {
 
 export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
   const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
+  const { insertTemplate } = useEditorState();
 
   const handleTemplateClick = (template: UMLTemplate) => {
+    // Use centralized template insertion
+    insertTemplate(template.template);
+    // Also call the prop callback for backward compatibility
     onInsertTemplate(template.template);
   };
 

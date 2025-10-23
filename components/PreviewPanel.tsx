@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import mermaid from 'mermaid';
+import { usePreviewState } from './AppStateProvider';
 
 interface PreviewPanelProps {
   mermaidCode: string;
@@ -17,10 +18,12 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   onRenderSuccess
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const renderTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Use centralized state management for loading state
+  const { isLoading, setIsLoading } = usePreviewState();
 
   // Initialize Mermaid with theme configuration
   const initializeMermaid = useCallback(() => {
@@ -236,7 +239,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [mermaidCode, isInitialized, theme, onRenderError, onRenderSuccess]);
+  }, [mermaidCode, isInitialized, onRenderError, onRenderSuccess]);
 
   // Debounced rendering effect
   useEffect(() => {
@@ -271,7 +274,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         clearTimeout(renderTimeoutRef.current);
       }
     };
-  }, [mermaidCode, renderDiagram]);
+  }, [mermaidCode, renderDiagram, setIsLoading]);
 
   // Cleanup timeout on unmount
   useEffect(() => {

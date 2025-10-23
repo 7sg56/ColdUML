@@ -1,62 +1,41 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import Header from '../components/Header';
 import EditorPanel, { EditorPanelRef } from '../components/EditorPanel';
 import HelperPanel from '../components/HelperPanel';
 import PreviewPanel from '../components/PreviewPanel';
+import { AppStateProvider, useEditorState, useThemeState, usePreviewState, useAppState } from '../components/AppStateProvider';
 import { copyToClipboard } from '../lib/clipboard';
 
-// Default Mermaid content as specified in requirements
-const DEFAULT_MERMAID_CONTENT = `classDiagram
-    class Animal {
-        +String name
-        +int age
-        +makeSound()
-        +move()
-    }
-    
-    class Dog {
-        +String breed
-        +bark()
-        +wagTail()
-    }
-    
-    class Cat {
-        +String color
-        +meow()
-        +purr()
-    }
-    
-    Animal <|-- Dog
-    Animal <|-- Cat`;
+// Import test utilities for development
+if (process.env.NODE_ENV === 'development') {
+  import('../lib/state-test-utils').then(({ StateTestUtils }) => {
+    // Make test utilities available in development
+    (window as unknown as { StateTestUtils?: typeof StateTestUtils }).StateTestUtils = StateTestUtils;
+  });
+}
 
-export default function Home() {
-  const [editorContent, setEditorContent] = useState(DEFAULT_MERMAID_CONTENT);
-  const [, setCursorPosition] = useState(0);
-  const [theme, setTheme] = useState<'light' | 'dark' | null>(null); // Start with null to prevent hydration mismatch
-  const [isThemeLoaded, setIsThemeLoaded] = useState(false);
+// Main application component with state management
+function MermaidUMLEditor() {
   const editorRef = useRef<EditorPanelRef>(null);
-
-  // Initialize theme from system preference or localStorage
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const initialTheme = savedTheme || systemTheme;
-    setTheme(initialTheme);
-    setIsThemeLoaded(true);
-    
-    // Apply theme to document
-    document.documentElement.setAttribute('data-theme', initialTheme);
-  }, []);
+  
+  // Use centralized state management hooks
+  const { content, setCursorPosition, insertTemplate } = useEditorState();
+  const { theme, toggleTheme } = useThemeState();
+  const { setRenderError, setIsLoading } = usePreviewState();
+  const { actions } = useAppState();
 
   const handleCopyCode = async () => {
     try {
-      await copyToClipboard(editorContent);
+      setIsLoading(true);
+      await copyToClipboard(content);
       // TODO: Add toast notification for successful copy
     } catch (error) {
       console.error('Failed to copy code:', error);
       // TODO: Add toast notification for failed copy
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,39 +50,36 @@ export default function Home() {
   };
 
   const handleResetEditor = () => {
-    setEditorContent(DEFAULT_MERMAID_CONTENT);
+    // Reset through state management system
+    actions.resetToDefaults();
     // TODO: Add toast notification for successful reset
   };
 
-  const handleEditorContentChange = (content: string) => {
-    setEditorContent(content);
-    // Save to localStorage for persistence
-    localStorage.setItem('mermaid-editor-content', content);
+  const handleEditorContentChange = () => {
+    // Content changes are now handled through the centralized state
+    // The EditorPanel will call the state management directly
   };
 
   const handleCursorPositionChange = (position: number) => {
     setCursorPosition(position);
   };
 
-  // Load saved content from localStorage on mount
-  useEffect(() => {
-    const savedContent = localStorage.getItem('mermaid-editor-content');
-    if (savedContent) {
-      setEditorContent(savedContent);
-    }
-  }, []);
-
-  const handleThemeToggle = () => {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme);
-  };
-
   const handleInsertTemplate = (template: string) => {
+    // Use centralized template insertion
+    insertTemplate(template);
+    
+    // Also update the editor directly for immediate feedback
     if (editorRef.current) {
       editorRef.current.insertTemplate(template);
     }
+  };
+
+  const handleRenderError = (error: string) => {
+    setRenderError(error);
+  };
+
+  const handleRenderSuccess = () => {
+    setRenderError(null);
   };
 
   return (
@@ -113,8 +89,8 @@ export default function Home() {
         onDownloadPNG={handleDownloadPNG}
         onDownloadSVG={handleDownloadSVG}
         onResetEditor={handleResetEditor}
-        onThemeToggle={handleThemeToggle}
-        currentTheme={theme || 'light'}
+        onThemeToggle={toggleTheme}
+        currentTheme={theme}
       />
 
       {/* Main content area with three-panel layout */}
@@ -128,43 +104,35 @@ export default function Home() {
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
           {/* Editor Panel - Left side on desktop, top on mobile */}
           <div className="flex-1 bg-editor-background border-b md:border-b-0 md:border-r border-panel-border flex flex-col">
-            {isThemeLoaded && theme ? (
-              <EditorPanel
-                ref={editorRef}
-                content={editorContent}
-                onChange={handleEditorContentChange}
-                onCursorPositionChange={handleCursorPositionChange}
-                theme={theme}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                Loading editor...
-              </div>
-            )}
+            <EditorPanel
+              ref={editorRef}
+              content={content}
+              onChange={handleEditorContentChange}
+              onCursorPositionChange={handleCursorPositionChange}
+              theme={theme}
+            />
           </div>
 
           {/* Preview Panel - Right side on desktop, bottom on mobile */}
           <div className="flex-1 bg-preview-background flex flex-col">
-            {isThemeLoaded && theme ? (
-              <PreviewPanel
-                mermaidCode={editorContent}
-                theme={theme}
-                onRenderError={(error) => {
-                  console.error('Mermaid render error:', error);
-                  // TODO: Add toast notification for render errors
-                }}
-                onRenderSuccess={() => {
-                  // TODO: Add success feedback if needed
-                }}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                Loading preview...
-              </div>
-            )}
+            <PreviewPanel
+              mermaidCode={content}
+              theme={theme}
+              onRenderError={handleRenderError}
+              onRenderSuccess={handleRenderSuccess}
+            />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// Main component wrapped with state provider
+export default function Home() {
+  return (
+    <AppStateProvider>
+      <MermaidUMLEditor />
+    </AppStateProvider>
   );
 }

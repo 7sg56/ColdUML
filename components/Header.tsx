@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useAppMetadata } from './AppStateProvider';
 
 interface HeaderProps {
   onCopyCode: () => void;
@@ -20,6 +21,7 @@ export default function Header({
   currentTheme
 }: HeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const { lastSaved, hasUnsavedChanges, storageAvailable } = useAppMetadata();
 
   const handleResetClick = () => {
     setShowResetConfirm(true);
@@ -47,6 +49,27 @@ export default function Header({
       <header className="h-14 bg-header-background border-b border-header-border flex items-center justify-between px-4 flex-shrink-0 relative">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-semibold text-foreground">Mermaid UML Editor</h1>
+          {/* Status indicators */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            {hasUnsavedChanges && storageAvailable && (
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                Unsaved changes
+              </span>
+            )}
+            {lastSaved && !hasUnsavedChanges && (
+              <span className="flex items-center gap-1">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                Saved {new Date(lastSaved).toLocaleTimeString()}
+              </span>
+            )}
+            {!storageAvailable && (
+              <span className="flex items-center gap-1 text-orange-500">
+                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                Storage unavailable
+              </span>
+            )}
+          </div>
         </div>
         
         <div className="flex items-center gap-2">

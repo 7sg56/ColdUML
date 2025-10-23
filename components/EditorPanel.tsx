@@ -3,6 +3,7 @@
 import { useRef, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { configureEditorForUML, insertTemplateAtCursor } from '@/lib/editor-utils';
+import { useEditorState } from './AppStateProvider';
 
 interface EditorPanelProps {
   content: string;
@@ -25,6 +26,9 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
 }, ref) => {
   const editorRef = useRef<unknown>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Use centralized state management for editor-specific functionality
+  const { setContent, preferences } = useEditorState();
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
@@ -216,11 +220,14 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    // Set new timeout for debounced onChange
+    // Set new timeout for debounced onChange using user preferences
     debounceTimeoutRef.current = setTimeout(() => {
+      // Update centralized state
+      setContent(value);
+      // Also call the prop callback for backward compatibility
       onChange(value);
-    }, 300); // 300ms debounce
-  }, [onChange]);
+    }, preferences.debounceDelay);
+  }, [onChange, setContent, preferences.debounceDelay]);
 
   // Update theme when it changes
   useEffect(() => {
@@ -268,10 +275,10 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
           onChange={handleEditorChange}
           onMount={handleEditorDidMount}
           options={{
-            minimap: { enabled: false },
+            minimap: { enabled: preferences.minimap },
             scrollBeyondLastLine: false,
-            fontSize: 14,
-            lineNumbers: 'on',
+            fontSize: preferences.fontSize,
+            lineNumbers: preferences.lineNumbers ? 'on' : 'off',
             roundedSelection: false,
             scrollbar: {
               vertical: 'auto',
@@ -280,7 +287,7 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
             automaticLayout: true,
             tabSize: 2,
             insertSpaces: true,
-            wordWrap: 'on',
+            wordWrap: preferences.wordWrap ? 'on' : 'off',
             lineDecorationsWidth: 10,
             lineNumbersMinChars: 3,
             glyphMargin: false,

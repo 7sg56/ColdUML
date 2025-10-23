@@ -54,7 +54,7 @@ export default function Header({
       <header className="h-12 sm:h-14 lg:h-16 bg-header-background border-b border-header-border flex items-center justify-between px-2 sm:px-4 flex-shrink-0 relative">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <h1 className="text-lg sm:text-xl font-semibold text-foreground truncate">
-            <span className="hidden sm:inline">Mermaid UML Editor</span>
+            <span className="hidden sm:inline">ColdUML</span>
             <span className="sm:hidden">UML Editor</span>
           </h1>
 

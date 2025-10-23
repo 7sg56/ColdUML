@@ -1,7 +1,3 @@
-/**
- * Simplified export utilities for Mermaid diagrams
- * Basic PNG, SVG export and clipboard operations without complex options
- */
 
 export interface ExportResult {
   success: boolean;

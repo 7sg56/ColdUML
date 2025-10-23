@@ -26,17 +26,18 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     insertTemplate: (template: string) => {
       if (editorRef.current) {
         const editor = editorRef.current;
-        const position = editor.getPosition();
-        if (position) {
-          const range = {
-            startLineNumber: position.lineNumber,
-            startColumn: position.column,
-            endLineNumber: position.lineNumber,
-            endColumn: position.column
+        const model = editor.getModel();
+        if (model) {
+          // Replace all content with the template
+          const fullRange = {
+            startLineNumber: 1,
+            startColumn: 1,
+            endLineNumber: model.getLineCount(),
+            endColumn: model.getLineMaxColumn(model.getLineCount())
           };
           
-          editor.executeEdits('insert-template', [{
-            range,
+          editor.executeEdits('replace-all-content', [{
+            range: fullRange,
             text: template,
             forceMoveMarkers: true
           }]);

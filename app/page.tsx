@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import Header from "../components/Header";
 import SimpleEditor, { SimpleEditorRef } from "../components/SimpleEditor";
-import HelperPanel from "../components/HelperPanel";
+import UMLTemplates from "../components/UMLTemplates";
 import SimplePreview from "../components/SimplePreview";
 import { exportAsPNG, exportAsSVG, copyMermaidCode } from "../lib/export-utils";
 import { toast } from "../lib/toast-utils";
@@ -153,31 +153,27 @@ function MermaidUMLEditor() {
         currentTheme={theme}
       />
 
-      {/* Main content area with responsive three-panel layout */}
+      {/* Main content area - Full width layout with center divider */}
       <main
         id="main-content"
-        className="flex-1 flex flex-col xl:flex-row overflow-hidden"
+        className="flex-1 flex flex-col lg:flex-row overflow-hidden"
         role="main"
         aria-label="UML diagram editor workspace"
       >
-        {/* Helper Panel - Responsive positioning */}
-        <aside
-          className="w-full xl:w-64 flex-shrink-0 border-b xl:border-b-0 xl:border-r border-panel-border bg-panel-background"
-          role="complementary"
-          aria-label="UML template helpers"
-        >
-          <HelperPanel onInsertTemplate={handleInsertTemplate} />
-        </aside>
+        {/* Left Column: HelperPanel + EditorPanel (stacked) */}
+        <section className="left flex-1">
+          {/* HelperPanel - Top of left column */}
+          <aside
+            className="panel"
+            role="complementary"
+            aria-label="UML template library"
+          >
+            <UMLTemplates onInsertTemplate={handleInsertTemplate} />
+          </aside>
 
-        {/* Editor and Preview panels container */}
-        <div
-          className="flex-1 flex flex-col lg:flex-row overflow-hidden min-w-0"
-          role="region"
-          aria-label="Editor and preview panels"
-        >
-          {/* Editor Panel - Responsive sizing */}
+          {/* EditorPanel - Bottom of left column (takes remaining space) */}
           <section
-            className="flex-1 min-h-0 border-b lg:border-b-0 lg:border-r border-panel-border flex flex-col"
+            className="panel grow"
             role="region"
             aria-label="Mermaid code editor"
           >
@@ -188,21 +184,23 @@ function MermaidUMLEditor() {
               theme={theme}
             />
           </section>
+        </section>
 
-          {/* Preview Panel - Responsive sizing */}
-          <section
-            className="flex-1 min-h-0 flex flex-col"
-            role="region"
-            aria-label="Diagram preview"
-          >
+        {/* Right Column: PreviewPanel (full height) */}
+        <section
+          className="right flex-1"
+          role="region"
+          aria-label="Diagram preview"
+        >
+          <div className="panel">
             <SimplePreview
               content={content}
               theme={theme}
               onError={handleRenderError}
               onSuccess={handleRenderSuccess}
             />
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
     </div>
   );

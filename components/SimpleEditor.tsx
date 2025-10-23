@@ -215,7 +215,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
           </button>
         </div>
       </div>
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 monaco-editor-wrapper">
         <Editor
           height="100%"
           language="mermaid"
@@ -240,6 +240,15 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
             contextmenu: true,
             smoothScrolling: true,
             overviewRulerBorder: false,
+            scrollbar: {
+              vertical: 'auto',
+              horizontal: 'auto',
+              verticalScrollbarSize: 8,
+              horizontalScrollbarSize: 8,
+              useShadows: false,
+              verticalHasArrows: false,
+              horizontalHasArrows: false
+            },
             find: {
               addExtraSpaceOnTop: false,
               autoFindInSelection: 'never',

@@ -59,6 +59,85 @@
   background: color-mix(in oklab, var(--background) 85%, var(--panel-background)); 
 }
 
+/* Editor scrolling fix for all screen sizes */
+.monaco-editor {
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+}
+
+.monaco-editor .view-lines {
+  overflow: visible !important;
+}
+
+.monaco-editor .view-overlays {
+  overflow: visible !important;
+}
+
+.monaco-editor .margin {
+  overflow: visible !important;
+}
+
+/* Ensure editor container allows scrolling */
+.monaco-editor-wrapper {
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  height: 100% !important;
+  touch-action: pan-y !important;
+}
+
+/* Fix for panel layout on all screen sizes */
+.left > .panel.grow {
+  overflow: hidden !important;
+}
+
+.left > .panel.grow .monaco-editor-wrapper {
+  overflow: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Additional fixes for medium and large screens */
+@media (min-width: 768px) {
+  .monaco-editor {
+    overflow: auto !important;
+  }
+  
+  .monaco-editor-wrapper {
+    overflow: auto !important;
+    height: 100% !important;
+  }
+  
+  .left > .panel.grow {
+    overflow: hidden !important;
+  }
+  
+  .left > .panel.grow .monaco-editor-wrapper {
+    overflow: auto !important;
+  }
+}
+
+/* Ensure proper height and scrolling for all screen sizes */
+.panel.grow {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+
+.panel.grow .monaco-editor-wrapper {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+/* Fix for Monaco Editor internal scrolling */
+.monaco-editor .overflow-guard {
+  overflow: auto !important;
+}
+
+.monaco-editor .monaco-scrollable-element {
+  overflow: auto !important;
+}
+
 .panel-title { 
   font-weight: 600; 
   font-size: 13px; 

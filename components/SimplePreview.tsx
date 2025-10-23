@@ -286,6 +286,7 @@ const SimplePreview = ({
         <div
           ref={containerRef}
           className="w-full h-full p-4 overflow-auto bg-preview-background"
+          data-testid="mermaid-preview-container"
           style={{
             fontFamily: "Arial, sans-serif",
             fontSize: "12px",

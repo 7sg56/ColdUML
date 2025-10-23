@@ -56,7 +56,7 @@ function getContainerClasses(position: ToastOptions['position']): string {
  * Get CSS classes for toast based on type
  */
 function getToastClasses(type: ToastOptions['type']): string {
-  const baseClasses = 'pointer-events-auto max-w-sm w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg border transform transition-all duration-300 ease-in-out';
+  const baseClasses = 'pointer-events-auto max-w-md w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg border transform transition-all duration-300 ease-in-out';
   
   switch (type) {
     case 'success':
@@ -109,7 +109,7 @@ function createToastElement(toast: Toast): HTMLElement {
       <div class="flex-shrink-0">
         ${getToastIcon(toast.type)}
       </div>
-      <div class="ml-3 w-0 flex-1">
+      <div class="ml-3 flex-1 min-w-0">
         <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
           ${toast.message}
         </p>

@@ -72,6 +72,17 @@ const MERMAID_ERROR_PATTERNS = [
       'Check if your diagram syntax is valid',
       'Simplify the diagram and try again'
     ]
+  },
+  {
+    pattern: /empty error object|Unknown error \(empty error object\)/i,
+    type: 'syntax' as const,
+    getMessage: () => 'Mermaid syntax error detected. Please check your diagram structure.',
+    suggestions: [
+      'Ensure your diagram starts with "classDiagram"',
+      'Check that all class names are valid (letters, numbers, underscores only)',
+      'Verify that all relationships use proper syntax (e.g., ClassA --> ClassB)',
+      'Make sure all brackets and parentheses are properly matched'
+    ]
   }
 ];
 
@@ -127,8 +138,41 @@ const EXPORT_ERROR_PATTERNS = [
  * Parse and categorize errors
  */
 export function parseError(error: Error | string, context?: Record<string, unknown>): ErrorDetails {
-  const errorMessage = typeof error === 'string' ? error : error.message;
-  const originalError = typeof error === 'string' ? undefined : error;
+  // Handle null, undefined, or empty error objects
+  if (!error) {
+    return {
+      type: 'unknown',
+      message: 'An unknown error occurred (no error details provided)',
+      originalError: undefined,
+      context,
+      suggestions: [
+        'Try refreshing the page',
+        'Check your internet connection',
+        'Contact support if the problem persists'
+      ],
+      recoverable: false
+    };
+  }
+
+  // Extract error message more robustly
+  let errorMessage: string;
+  let originalError: Error | undefined;
+
+  if (typeof error === 'string') {
+    errorMessage = error;
+    originalError = undefined;
+  } else if (error instanceof Error) {
+    errorMessage = error.message || error.toString() || 'Error object with no message';
+    originalError = error;
+  } else if (typeof error === 'object') {
+    // Handle error-like objects
+    const errorObj = error as Record<string, unknown>;
+    errorMessage = (typeof errorObj.message === 'string' ? errorObj.message : errorObj.toString()) || 'Unknown error object';
+    originalError = error as Error;
+  } else {
+    errorMessage = String(error) || 'Unknown error type';
+    originalError = undefined;
+  }
 
   // Check Mermaid syntax errors
   for (const pattern of MERMAID_ERROR_PATTERNS) {
@@ -418,13 +462,31 @@ export function handleError(
   error: Error | string,
   context?: Record<string, unknown>
 ): ErrorDetails {
+  // Handle cases where error might be null, undefined, or an empty object
+  if (!error || (typeof error === 'object' && Object.keys(error).length === 0)) {
+    // Don't log the empty object to console to avoid the console error
+    console.warn('handleError called with empty or null error - likely Mermaid syntax issue');
+    error = 'Diagram syntax error detected. Please check your Mermaid syntax.';
+  }
+
   const errorDetails = parseError(error, context);
   
   // Record error for metrics
   ErrorMetrics.recordError(errorDetails);
   
-  // Log error details
-  console.error('Error handled:', errorDetails);
+  // Only log detailed error information if there's actual content
+  if (errorDetails.message && errorDetails.message !== 'Unknown error (empty error object)') {
+    console.error('Error handled:', {
+      type: errorDetails.type,
+      message: errorDetails.message,
+      context: errorDetails.context,
+      recoverable: errorDetails.recoverable,
+      originalError: errorDetails.originalError?.message || 'No original error message'
+    });
+  } else {
+    // Don't log empty error objects to avoid console pollution
+    console.warn('Empty error object handled - likely Mermaid syntax issue');
+  }
   
   return errorDetails;
 }
@@ -440,7 +502,31 @@ export async function withErrorHandling<T>(
     const data = await operation();
     return { success: true, data };
   } catch (error) {
-    const errorDetails = handleError(error as Error, context);
+    // Handle various error types more robustly
+    let safeError: Error;
+    
+    if (error instanceof Error) {
+      safeError = error;
+    } else if (typeof error === 'string') {
+      safeError = new Error(error);
+    } else if (error && typeof error === 'object') {
+      // Handle error-like objects
+      const errorObj = error as Record<string, unknown>;
+      const message = (typeof errorObj.message === 'string' ? errorObj.message : errorObj.toString()) || 'Unknown error object';
+      safeError = new Error(message);
+      // Preserve original error properties if available
+      if (typeof errorObj.stack === 'string') {
+        safeError.stack = errorObj.stack;
+      }
+    } else if (error === null || error === undefined || (typeof error === 'object' && Object.keys(error).length === 0)) {
+      // Handle empty error objects from Mermaid
+      safeError = new Error('Diagram syntax error detected. Please check your Mermaid syntax.');
+    } else {
+      // Handle null, undefined, or other primitive types
+      safeError = new Error(`Unknown error occurred in withErrorHandling: ${String(error)}`);
+    }
+    
+    const errorDetails = handleError(safeError, context);
     return { success: false, error: errorDetails };
   }
 }
@@ -453,13 +539,14 @@ export async function withRetry<T>(
   maxRetries = 3,
   delay = 1000
 ): Promise<T> {
-  let lastError: Error;
+  let lastError: Error = new Error('Unknown error in withRetry');
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       return await operation();
     } catch (error) {
-      lastError = error as Error;
+      // Ensure we have a valid error object
+      lastError = error as Error || new Error(`Retry attempt ${attempt} failed with unknown error`);
       
       const errorDetails = parseError(lastError);
       if (!errorDetails.recoverable || attempt === maxRetries) {
@@ -471,5 +558,5 @@ export async function withRetry<T>(
     }
   }
   
-  throw lastError!;
+  throw lastError;
 }

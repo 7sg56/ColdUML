@@ -16,9 +16,7 @@ import {
 import { exportAsPNG, exportAsSVG, copyMermaidCode } from "../lib/export-utils";
 import { toast } from "../lib/toast-utils";
 import ErrorBoundary from "../components/ErrorBoundary";
-import { LoadingOverlay } from "../components/LoadingIndicator";
 import { withErrorHandling } from "../lib/error-handling";
-import { useInitializationStatus } from "../components/AppStateProvider";
 
 // Import test utilities for development
 if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
@@ -50,47 +48,60 @@ if (process.env.NODE_ENV === "development") {
         }
       }, 0);
     });
+
+    // Add global error handlers to catch unhandled errors
+    window.addEventListener('error', (event) => {
+      // Only log if there's meaningful error information
+      if (event.message || event.error) {
+        console.error('Global error caught:', {
+          message: event.message || 'No message',
+          filename: event.filename || 'Unknown file',
+          lineno: event.lineno || 0,
+          colno: event.colno || 0,
+          error: event.error ? {
+            name: event.error.name,
+            message: event.error.message,
+            stack: event.error.stack
+          } : 'No error object'
+        });
+      } else {
+        console.warn('Global error event with no meaningful information:', event);
+      }
+    });
+
+    window.addEventListener('unhandledrejection', (event) => {
+      // Handle empty or undefined rejection reasons
+      const reason = event.reason;
+      if (reason !== null && reason !== undefined) {
+        // Check for empty objects specifically
+        if (typeof reason === 'object' && Object.keys(reason).length === 0) {
+          console.warn('Unhandled promise rejection with empty object - this may indicate a library error');
+        } else {
+          console.error('Unhandled promise rejection:', {
+            reason: typeof reason === 'object' ? {
+              name: reason.name || 'Unknown',
+              message: reason.message || 'No message',
+              stack: reason.stack || 'No stack trace'
+            } : reason,
+            reasonType: typeof reason
+          });
+        }
+      } else {
+        console.warn('Unhandled promise rejection with empty reason');
+      }
+      // Prevent the default behavior (logging to console)
+      event.preventDefault();
+    });
   }
 }
 
 function MermaidUMLEditor() {
   const editorRef = useRef<EditorPanelRef>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
-  const [showWelcome, setShowWelcome] = useState(false);
-
   const { content, setCursorPosition, insertTemplate } = useEditorState();
   const { theme, toggleTheme } = useThemeState();
   const { setRenderError, setIsLoading } = usePreviewState();
   const { actions } = useAppState();
-  const { isFirstTimeUser, isUsingDefaultContent } = useInitializationStatus();
 
-  // Handle application initialization
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Simulate minimum loading time for better UX (prevent flash)
-        const minLoadTime = new Promise((resolve) => setTimeout(resolve, 800));
-
-        // Wait for any async initialization
-        await Promise.all([
-          minLoadTime,
-          // Add any other initialization promises here
-        ]);
-
-        setIsInitializing(false);
-
-        // Show welcome message for first-time users
-        if (isFirstTimeUser && isUsingDefaultContent) {
-          setTimeout(() => setShowWelcome(true), 1000);
-        }
-      } catch (error) {
-        console.error("Failed to initialize application:", error);
-        setIsInitializing(false);
-      }
-    };
-
-    initializeApp();
-  }, [isFirstTimeUser, isUsingDefaultContent]);
 
   const handleCopyCode = async () => {
     const result = await withErrorHandling(
@@ -213,62 +224,7 @@ function MermaidUMLEditor() {
 
   return (
     <>
-      <LoadingOverlay
-        show={isInitializing}
-        message="Initializing application..."
-      />
-
-      {/* Welcome overlay for first-time users */}
-      {showWelcome && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 welcome-overlay">
-          <div className="bg-background border border-border rounded-lg p-6 max-w-md mx-4 shadow-lg welcome-content">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-foreground mb-3">
-                Welcome to Mermaid UML Editor! 🎉
-              </h2>
-              <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
-                This editor helps you create UML diagrams using Mermaid syntax.
-                We&apos;ve loaded a sample class diagram to get you started.
-              </p>
-              <div className="text-left bg-muted p-3 rounded-md mb-4 text-xs">
-                <p className="font-medium mb-2">Quick tips:</p>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>
-                    • Use the template buttons on the left to insert UML
-                    elements
-                  </li>
-                  <li>• Your diagram updates in real-time as you type</li>
-                  <li>• Use Cmd+1-5 for quick template insertion</li>
-                  <li>• Export your diagrams as PNG or SVG</li>
-                </ul>
-              </div>
-              <button
-                onClick={() => {
-                  setShowWelcome(false);
-                  // Mark welcome as shown
-                  try {
-                    localStorage.setItem(
-                      "mermaid-editor-welcome-shown",
-                      "true"
-                    );
-                  } catch (error) {
-                    console.warn("Failed to save welcome state:", error);
-                  }
-                }}
-                className="w-full px-4 py-2 text-sm bg-primary text-primary-foreground hover:bg-primary/90 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-              >
-                Get Started
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="h-screen flex flex-col bg-background text-foreground font-sans">
-        {/* Skip link for accessibility */}
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
 
         <ErrorBoundary
           onError={(error, errorInfo) => {

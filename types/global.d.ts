@@ -1,33 +1,5 @@
 // Global type declarations for Mermaid UML Editor
-
-declare module 'mermaid' {
-  export interface MermaidConfig {
-    theme?: 'default' | 'dark' | 'forest' | 'neutral';
-    themeVariables?: {
-      primaryColor?: string;
-      primaryTextColor?: string;
-      primaryBorderColor?: string;
-      lineColor?: string;
-      secondaryColor?: string;
-      tertiaryColor?: string;
-    };
-    classDiagram?: {
-      htmlLabels?: boolean;
-      curve?: 'basis' | 'linear' | 'stepAfter';
-    };
-    startOnLoad?: boolean;
-    securityLevel?: 'strict' | 'loose' | 'antiscript' | 'sandbox';
-  }
-
-  export interface RenderResult {
-    svg: string;
-    bindFunctions?: (element: Element) => void;
-  }
-
-  export function initialize(config: MermaidConfig): void;
-  export function render(id: string, definition: string, svgContainingElement?: Element): Promise<RenderResult>;
-  export function parse(definition: string): Promise<boolean>;
-}
+// Note: Mermaid v10+ provides its own type definitions
 
 // Monaco Editor types are already provided by monaco-editor package
 // but we can extend them if needed for our specific use case

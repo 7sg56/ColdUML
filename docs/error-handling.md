@@ -2,9 +2,35 @@
 
 This document describes the comprehensive error handling and user feedback system implemented for the Mermaid UML Editor.
 
+## Recent Improvements (v2.0)
+
+### Fixed Empty Error Object Issues
+
+- **Problem**: Console was showing "Error handled: {}" and "Mermaid render error: {}" for empty or malformed error objects
+- **Solution**: Enhanced error parsing to handle null, undefined, and empty objects gracefully
+- **Specific Fixes**:
+  - Added checks for empty objects, null, undefined, and meaningless strings like "[object Object]"
+  - Improved Mermaid-specific error handling with nested try-catch blocks
+  - Enhanced global error handlers to filter out empty error objects
+  - Added meaningful fallback messages for debugging
+- **Impact**: Cleaner console output and better error tracking
+
+### Enhanced Global Error Handlers
+
+- **Improvement**: Better handling of window error events and unhandled promise rejections
+- **Details**: Now properly extracts meaningful information from error events
+- **Benefit**: More informative error logs for debugging
+
+### Robust Mermaid Rendering Error Handling
+
+- **Enhancement**: Improved error handling in diagram rendering pipeline
+- **Features**: Better error context and fallback mechanisms
+- **Result**: More reliable diagram preview with clearer error messages
+
 ## Overview
 
 The error handling system provides:
+
 - **Component-level error boundaries** for graceful failure recovery
 - **User-friendly error messages** for Mermaid syntax errors
 - **Loading indicators** for all async operations
@@ -21,12 +47,14 @@ The error handling system provides:
 React error boundary that catches JavaScript errors anywhere in the component tree and displays a fallback UI.
 
 **Features**:
+
 - Catches and logs component errors
 - Provides retry and reload functionality
 - Shows detailed error information in development
 - Reports errors to tracking services in production
 
 **Usage**:
+
 ```tsx
 <ErrorBoundary onError={(error, errorInfo) => console.log(error)}>
   <YourComponent />
@@ -42,9 +70,11 @@ Core utilities for parsing, categorizing, and handling different types of errors
 **Key Functions**:
 
 #### `parseError(error, context?)`
+
 Parses and categorizes errors into specific types:
+
 - `syntax` - Mermaid syntax errors
-- `rendering` - Diagram rendering errors  
+- `rendering` - Diagram rendering errors
 - `export` - File export errors
 - `storage` - Browser storage errors
 - `network` - Network-related errors
@@ -52,19 +82,25 @@ Parses and categorizes errors into specific types:
 - `unknown` - Unrecognized errors
 
 #### `validateMermaidSyntax(content)`
+
 Validates Mermaid diagram syntax and returns:
+
 - `isValid` - Whether the syntax is valid
 - `errors` - Array of syntax errors
 - `warnings` - Array of potential issues
 
 #### `validateUserInput(input, maxLength?)`
+
 Validates user input for edge cases:
+
 - Content length limits
 - Excessive nesting detection
 - Circular reference detection
 
 #### `ErrorRecovery.attemptSyntaxFix(content)`
+
 Attempts to automatically fix common syntax errors:
+
 - Adds missing `classDiagram` declaration
 - Fixes relationship arrow syntax
 - Cleans invalid class names
@@ -76,6 +112,7 @@ Attempts to automatically fix common syntax errors:
 Provides various loading states and indicators for better user feedback.
 
 **Components**:
+
 - `LoadingIndicator` - Basic loading spinner/animation
 - `EditorLoadingIndicator` - Specialized for editor loading
 - `PreviewLoadingIndicator` - For diagram rendering
@@ -83,6 +120,7 @@ Provides various loading states and indicators for better user feedback.
 - `LoadingOverlay` - Full-screen loading overlay
 
 **Hook**:
+
 ```tsx
 const { isLoading, startLoading, stopLoading, withLoading } = useLoadingState();
 ```
@@ -94,6 +132,7 @@ const { isLoading, startLoading, stopLoading, withLoading } = useLoadingState();
 User-friendly error display components with actionable feedback.
 
 **Features**:
+
 - Type-specific error icons and styling
 - Suggested fixes and recovery actions
 - Auto-fix functionality for syntax errors
@@ -101,6 +140,7 @@ User-friendly error display components with actionable feedback.
 - Compact and full display modes
 
 **Specialized Components**:
+
 - `SyntaxErrorDisplay` - For Mermaid syntax errors
 - `ExportErrorDisplay` - For export failures
 - `StorageErrorDisplay` - For storage issues
@@ -110,11 +150,13 @@ User-friendly error display components with actionable feedback.
 ### Syntax Errors
 
 **Common Patterns**:
+
 - `Parse error on line X` - Syntax parsing failures
 - `Expecting X got Y` - Unexpected tokens
 - `Lexical error on line X` - Invalid characters
 
 **Handling**:
+
 - Real-time syntax validation
 - User-friendly error messages
 - Automatic fix suggestions
@@ -123,10 +165,12 @@ User-friendly error display components with actionable feedback.
 ### Rendering Errors
 
 **Common Patterns**:
+
 - `Maximum call stack size exceeded` - Complex diagrams
 - `Cannot read property` - Internal rendering issues
 
 **Handling**:
+
 - Complexity detection and warnings
 - Graceful fallback to error display
 - Suggestions to simplify diagrams
@@ -134,10 +178,12 @@ User-friendly error display components with actionable feedback.
 ### Export Errors
 
 **Common Patterns**:
+
 - `Failed to execute 'toBlob'` - Browser compatibility
 - `Network error` - Connection issues
 
 **Handling**:
+
 - Browser capability detection
 - Alternative export methods
 - Clear error messages with solutions
@@ -145,10 +191,12 @@ User-friendly error display components with actionable feedback.
 ### Storage Errors
 
 **Common Patterns**:
+
 - `QuotaExceededError` - Storage full
 - `SecurityError` - Private browsing mode
 
 **Handling**:
+
 - Storage availability detection
 - Graceful degradation when unavailable
 - User notifications about storage issues
@@ -158,6 +206,7 @@ User-friendly error display components with actionable feedback.
 ### PreviewPanel Integration
 
 The PreviewPanel component integrates error handling for:
+
 - Mermaid syntax validation before rendering
 - Rendering error capture and display
 - Loading state management
@@ -166,6 +215,7 @@ The PreviewPanel component integrates error handling for:
 ### Export Functions Integration
 
 Export utilities include comprehensive error handling:
+
 - Input validation
 - Browser capability checks
 - Detailed error messages
@@ -174,6 +224,7 @@ Export utilities include comprehensive error handling:
 ### State Management Integration
 
 The AppStateProvider includes error handling for:
+
 - localStorage operations
 - State validation
 - Initialization errors
@@ -184,12 +235,14 @@ The AppStateProvider includes error handling for:
 ### Automatic Fixes
 
 1. **Missing classDiagram Declaration**
+
    ```
    Before: class User { ... }
    After:  classDiagram\nclass User { ... }
    ```
 
 2. **Relationship Syntax**
+
    ```
    Before: User -> Order
    After:  User --> Order
@@ -213,6 +266,7 @@ The AppStateProvider includes error handling for:
 ### Error Metrics
 
 The `ErrorMetrics` class tracks:
+
 - Error frequency and patterns
 - Recent error history
 - Performance impact
@@ -221,6 +275,7 @@ The `ErrorMetrics` class tracks:
 ### Usage Analytics
 
 In production, errors are:
+
 - Categorized and counted
 - Reported to monitoring services
 - Used to improve error messages
@@ -231,16 +286,19 @@ In production, errors are:
 ### Manual Testing Scenarios
 
 1. **Syntax Errors**:
+
    - Enter invalid Mermaid syntax
    - Verify error display and suggestions
    - Test auto-fix functionality
 
 2. **Export Errors**:
+
    - Try exporting without a diagram
    - Test in browsers with limited support
    - Verify error messages and alternatives
 
 3. **Component Errors**:
+
    - Trigger JavaScript errors
    - Verify error boundary activation
    - Test retry and reload functionality
@@ -253,11 +311,13 @@ In production, errors are:
 ### Automated Testing
 
 Run the test script:
+
 ```bash
 node scripts/test-error-handling.js
 ```
 
 This tests:
+
 - Error parsing and categorization
 - Syntax validation
 - Error recovery mechanisms
@@ -290,11 +350,11 @@ To integrate with error tracking services, update the `ErrorBoundary` component:
 
 ```tsx
 // In production, replace console.warn with actual reporting
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   // Send to Sentry, LogRocket, etc.
   errorTrackingService.captureException(error, {
     extra: errorInfo,
-    tags: { component: 'ErrorBoundary' }
+    tags: { component: "ErrorBoundary" },
   });
 }
 ```
@@ -305,7 +365,7 @@ Adjust validation limits in `validateUserInput`:
 
 ```typescript
 const MAX_CONTENT_LENGTH = 50000; // Adjust as needed
-const MAX_NESTING_LEVEL = 10;     // Adjust as needed
+const MAX_NESTING_LEVEL = 10; // Adjust as needed
 ```
 
 ### Error Messages

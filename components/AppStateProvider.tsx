@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useRef,
   useContext,
+  useState,
 } from "react";
 import {
   AppState,
@@ -18,7 +19,6 @@ import {
   ThemeManager,
   StateValidator,
   TemplateManager,
-  PerformanceMonitor,
   AppInitializer,
 } from "@/lib/app-state";
 
@@ -109,10 +109,9 @@ function appStateReducer(state: AppState, action: StateAction): AppState {
       };
 
     case "INITIALIZE_STATE":
-      const sanitizedState = StateValidator.sanitizeState(action.payload);
       return {
         ...state,
-        ...sanitizedState,
+        ...action.payload,
       };
 
     case "SET_LAST_SAVED":
@@ -134,126 +133,56 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   const [state, dispatch] = useReducer(appStateReducer, DEFAULT_STATE);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializedRef = useRef(false);
+  const [isAppInitialized, setIsAppInitialized] = useState(false);
 
-  // Initialize state from localStorage on mount
+  // Simple initialization - just load content from localStorage
   useEffect(() => {
     if (isInitializedRef.current) return;
 
-    const initializeState = async () => {
-      PerformanceMonitor.startTimer("state-initialization");
-
-      try {
-        // Preload resources for faster startup
-        await AppInitializer.preloadResources();
-
-        // Get initialization status
-        const initStatus = AppInitializer.getInitializationStatus();
-        
-        // Initialize theme first
-        const initialTheme = ThemeManager.initializeTheme();
-
-        // Load saved data
-        const savedContent = AppStorage.loadEditorContent();
-        const savedPreferences = AppStorage.loadPreferences();
-        const lastSaved = AppStorage.getLastSaved();
-
-        // Initialize state with saved data
-        const initialState: Partial<AppState> = {
-          theme: initialTheme,
-          lastSaved,
-        };
-
-        // Use saved content if available, otherwise use default
-        if (savedContent && StateValidator.validateEditorContent(savedContent)) {
-          initialState.editorContent = savedContent;
-        } else {
-          // Ensure we're using the default content for new users
-          initialState.editorContent = DEFAULT_STATE.editorContent;
-        }
-
-        if (savedPreferences && StateValidator.validatePreferences(savedPreferences)) {
-          initialState.preferences = {
-            ...DEFAULT_PREFERENCES,
-            ...savedPreferences,
-          };
-        } else {
-          // Use default preferences for new users
-          initialState.preferences = DEFAULT_PREFERENCES;
-        }
-
-        dispatch({ type: "INITIALIZE_STATE", payload: initialState });
-
-        const duration = PerformanceMonitor.endTimer("state-initialization");
-        PerformanceMonitor.logPerformance("state-initialization", duration);
-
-        // Log initialization status for debugging
-        if (process.env.NODE_ENV === 'development') {
-          console.log('App initialization status:', initStatus);
-        }
-
-        isInitializedRef.current = true;
-      } catch (error) {
-        console.error("Failed to initialize app state:", error);
-        // Fallback to default state
-        dispatch({ type: "INITIALIZE_STATE", payload: DEFAULT_STATE });
-        isInitializedRef.current = true;
+    try {
+      const savedContent = AppStorage.loadEditorContent();
+      const initialTheme = ThemeManager.initializeTheme();
+      
+      if (savedContent && StateValidator.validateEditorContent(savedContent)) {
+        dispatch({ type: "SET_EDITOR_CONTENT", payload: savedContent });
       }
-    };
+      
+      if (initialTheme !== state.theme) {
+        dispatch({ type: "SET_THEME", payload: initialTheme });
+      }
 
-    initializeState();
+      isInitializedRef.current = true;
+      setIsAppInitialized(true);
+    } catch (error) {
+      console.error("Failed to initialize:", error);
+      isInitializedRef.current = true;
+      setIsAppInitialized(true);
+    }
   }, []);
 
-  // Debounced save to localStorage
-  const debouncedSave = useCallback(
-    (content: string, preferences: AppState["preferences"]) => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
+  // Simple auto-save
+  useEffect(() => {
+    if (!isInitializedRef.current) return;
+
+    const timeoutId = setTimeout(() => {
+      try {
+        AppStorage.saveEditorContent(state.editorContent);
+      } catch (error) {
+        console.error("Failed to save:", error);
       }
+    }, 500);
 
-      debounceTimeoutRef.current = setTimeout(() => {
-        PerformanceMonitor.startTimer("localStorage-save");
+    return () => clearTimeout(timeoutId);
+  }, [state.editorContent]);
 
-        try {
-          if (preferences.autoSave) {
-            AppStorage.saveEditorContent(content);
-            AppStorage.savePreferences(preferences);
-          }
-
-          const duration = PerformanceMonitor.endTimer("localStorage-save");
-          PerformanceMonitor.logPerformance("localStorage-save", duration);
-        } catch (error) {
-          console.error("Failed to save to localStorage:", error);
-        }
-      }, preferences.debounceDelay);
-    },
-    []
-  );
-
-  // Auto-save effect
+  // Simple theme change
   useEffect(() => {
     if (!isInitializedRef.current) return;
-
-    debouncedSave(state.editorContent, state.preferences);
-  }, [state.editorContent, state.preferences, debouncedSave]);
-
-  // Theme change effect
-  useEffect(() => {
-    if (!isInitializedRef.current) return;
-
     ThemeManager.applyTheme(state.theme);
     AppStorage.saveTheme(state.theme);
   }, [state.theme]);
 
-  // Cleanup debounce timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Action creators
+  // Simple action creators
   const actions: AppStateActions = {
     setEditorContent: useCallback((content: string) => {
       dispatch({ type: "SET_EDITOR_CONTENT", payload: content });
@@ -294,6 +223,7 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   const contextValue: AppContextValue = {
     state,
     actions,
+    isInitialized: isAppInitialized,
   };
 
   return (
@@ -303,55 +233,44 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   );
 }
 
-// Hook for accessing editor-specific state and actions
+// Simple editor hook
 export function useEditorState() {
   const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("useEditorState must be used within an AppStateProvider");
-  }
+  if (!context) throw new Error("useEditorState must be used within an AppStateProvider");
   const { state, actions } = context;
 
   return {
     content: state.editorContent,
     cursorPosition: state.cursorPosition,
     preferences: state.preferences,
-    isLoading: state.isLoading,
     setContent: actions.setEditorContent,
     setCursorPosition: actions.setCursorPosition,
     insertTemplate: actions.insertTemplate,
-    updatePreferences: actions.updatePreferences,
   };
 }
 
-// Hook for accessing theme state and actions
+// Simple theme hook
 export function useThemeState() {
   const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("useThemeState must be used within an AppStateProvider");
-  }
+  if (!context) throw new Error("useThemeState must be used within an AppStateProvider");
   const { state, actions } = context;
 
   return {
     theme: state.theme,
-    setTheme: actions.setTheme,
-    toggleTheme: useCallback(() => {
-      const newTheme = ThemeManager.toggleTheme(state.theme);
+    toggleTheme: () => {
+      const newTheme = state.theme === "light" ? "dark" : "light";
       actions.setTheme(newTheme);
-    }, [state.theme, actions]),
+    },
   };
 }
 
-// Hook for accessing preview state and actions
+// Simple preview hook
 export function usePreviewState() {
   const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("usePreviewState must be used within an AppStateProvider");
-  }
+  if (!context) throw new Error("usePreviewState must be used within an AppStateProvider");
   const { state, actions } = context;
 
   return {
-    content: state.editorContent,
-    theme: state.theme,
     renderError: state.renderError,
     isLoading: state.isLoading,
     setRenderError: actions.setRenderError,
@@ -359,12 +278,10 @@ export function usePreviewState() {
   };
 }
 
-// Hook for accessing application metadata
+// Simple metadata hook
 export function useAppMetadata() {
   const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("useAppMetadata must be used within an AppStateProvider");
-  }
+  if (!context) throw new Error("useAppMetadata must be used within an AppStateProvider");
   const { state } = context;
 
   return {
@@ -376,29 +293,9 @@ export function useAppMetadata() {
   };
 }
 
-// Hook for checking initialization status
-export function useInitializationStatus() {
-  const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("useInitializationStatus must be used within an AppStateProvider");
-  }
-  const { state } = context;
-
-  return {
-    isUsingDefaultContent: AppInitializer.isUsingDefaultContent(state.editorContent),
-    isFirstTimeUser: AppInitializer.isFirstTimeUser(),
-    hasUnsavedChanges: state.lastSaved 
-      ? Date.now() - state.lastSaved.getTime() > 5000 // 5 seconds threshold
-      : false,
-    initializationStatus: AppInitializer.getInitializationStatus(),
-  };
-}
-
 // Main hook for accessing the full app state context
 export function useAppState(): AppContextValue {
   const context = useContext(AppStateContext);
-  if (!context) {
-    throw new Error("useAppState must be used within an AppStateProvider");
-  }
+  if (!context) throw new Error("useAppState must be used within an AppStateProvider");
   return context;
 }

@@ -16,15 +16,14 @@ export interface AppState {
   preferences: UserPreferences;
 }
 
-// User preferences interface
+// User preferences
 export interface UserPreferences {
   autoSave: boolean;
-  debounceDelay: number;
   fontSize: number;
+  debounceDelay: number;
   wordWrap: boolean;
   minimap: boolean;
   lineNumbers: boolean;
-  defaultTemplate: string;
 }
 
 // State actions interface
@@ -43,6 +42,7 @@ export interface AppStateActions {
 export interface AppContextValue {
   state: AppState;
   actions: AppStateActions;
+  isInitialized?: boolean;
 }
 
 // Default state values
@@ -71,12 +71,11 @@ export const DEFAULT_MERMAID_CONTENT = `classDiagram
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   autoSave: true,
-  debounceDelay: 300,
   fontSize: 14,
+  debounceDelay: 300,
   wordWrap: true,
   minimap: false,
   lineNumbers: true,
-  defaultTemplate: DEFAULT_MERMAID_CONTENT
 };
 
 export const DEFAULT_STATE: AppState = {
@@ -101,65 +100,19 @@ export function useAppState(): AppContextValue {
   return context;
 }
 
-// Utility functions for application initialization
+// Simple utility functions
 export class AppInitializer {
   static isFirstTimeUser(): boolean {
-    // Only check on client side
-    if (typeof window === 'undefined') {
-      return false; // Assume not first time on server
-    }
-    
+    if (typeof window === 'undefined') return false;
     try {
-      const hasContent = AppStorage.loadEditorContent();
-      const hasPreferences = AppStorage.loadPreferences();
-      const welcomeShown = localStorage.getItem('mermaid-editor-welcome-shown');
-      
-      return !hasContent && !hasPreferences && !welcomeShown;
+      return !AppStorage.loadEditorContent();
     } catch {
-      return true; // Assume first time if we can't check
+      return true;
     }
   }
 
   static isUsingDefaultContent(content: string): boolean {
     return content === DEFAULT_MERMAID_CONTENT;
-  }
-
-  static getInitializationStatus(): {
-    isFirstTime: boolean;
-    hasStoredContent: boolean;
-    storageAvailable: boolean;
-  } {
-    // Only check on client side
-    if (typeof window === 'undefined') {
-      return {
-        isFirstTime: false,
-        hasStoredContent: false,
-        storageAvailable: false
-      };
-    }
-    
-    return {
-      isFirstTime: AppInitializer.isFirstTimeUser(),
-      hasStoredContent: !!AppStorage.loadEditorContent(),
-      storageAvailable: AppStorage.isStorageAvailable()
-    };
-  }
-
-  static async preloadResources(): Promise<void> {
-    // Preload any resources that might be needed
-    // This could include fonts, themes, or other assets
-    try {
-      // Ensure theme is applied early
-      const savedTheme = AppStorage.loadTheme();
-      if (savedTheme) {
-        ThemeManager.applyTheme(savedTheme);
-      }
-      
-      // Preload any other critical resources here
-      await Promise.resolve(); // Placeholder for future preloading
-    } catch (error) {
-      console.warn('Failed to preload some resources:', error);
-    }
   }
 }
 
@@ -234,6 +187,15 @@ export class AppStorage {
     } catch (error) {
       console.warn('Failed to load last saved date from localStorage:', error);
       return null;
+    }
+  }
+
+  static clearEditorContent(): void {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.EDITOR_CONTENT);
+      localStorage.removeItem(STORAGE_KEYS.LAST_SAVED);
+    } catch (error) {
+      console.warn('Failed to clear editor content from localStorage:', error);
     }
   }
 
@@ -387,55 +349,24 @@ export class ThemeManager {
   }
 }
 
-// State validation utilities
+// Simple validation
 export class StateValidator {
   static validateEditorContent(content: string): boolean {
-    return typeof content === 'string' && content.length <= 100000; // 100KB limit
+    return typeof content === 'string' && content.length < 100000;
   }
 
-  static validateTheme(theme: string): theme is 'light' | 'dark' {
+  static validateTheme(theme: string): boolean {
     return theme === 'light' || theme === 'dark';
   }
 
-  static validatePreferences(preferences: unknown): preferences is UserPreferences {
-    if (!preferences || typeof preferences !== 'object') return false;
-    
-    const prefs = preferences as Record<string, unknown>;
-    return (
-      typeof prefs.autoSave === 'boolean' &&
-      typeof prefs.debounceDelay === 'number' &&
-      typeof prefs.fontSize === 'number' &&
-      typeof prefs.wordWrap === 'boolean' &&
-      typeof prefs.minimap === 'boolean' &&
-      typeof prefs.lineNumbers === 'boolean' &&
-      typeof prefs.defaultTemplate === 'string'
-    );
-  }
-
-  static sanitizeState(state: Partial<AppState>): Partial<AppState> {
-    const sanitized: Partial<AppState> = {};
-
-    if (state.editorContent && StateValidator.validateEditorContent(state.editorContent)) {
-      sanitized.editorContent = state.editorContent;
-    }
-
-    if (state.theme && StateValidator.validateTheme(state.theme)) {
-      sanitized.theme = state.theme;
-    }
-
-    if (state.preferences && StateValidator.validatePreferences(state.preferences)) {
-      sanitized.preferences = state.preferences;
-    }
-
-    if (typeof state.cursorPosition === 'number' && state.cursorPosition >= 0) {
-      sanitized.cursorPosition = state.cursorPosition;
-    }
-
-    if (state.lastSaved instanceof Date) {
-      sanitized.lastSaved = state.lastSaved;
-    }
-
-    return sanitized;
+  static validatePreferences(preferences: UserPreferences): boolean {
+    return preferences && 
+           typeof preferences.autoSave === 'boolean' && 
+           typeof preferences.fontSize === 'number' &&
+           typeof preferences.debounceDelay === 'number' &&
+           typeof preferences.wordWrap === 'boolean' &&
+           typeof preferences.minimap === 'boolean' &&
+           typeof preferences.lineNumbers === 'boolean';
   }
 }
 
@@ -477,29 +408,5 @@ export class TemplateManager {
     });
     
     return formatted;
-  }
-}
-
-// Performance monitoring utilities
-export class PerformanceMonitor {
-  private static metrics: Map<string, number> = new Map();
-
-  static startTimer(operation: string): void {
-    this.metrics.set(operation, performance.now());
-  }
-
-  static endTimer(operation: string): number {
-    const startTime = this.metrics.get(operation);
-    if (!startTime) return 0;
-    
-    const duration = performance.now() - startTime;
-    this.metrics.delete(operation);
-    return duration;
-  }
-
-  static logPerformance(operation: string, duration: number): void {
-    if (duration > 100) { // Log operations taking more than 100ms
-      console.warn(`Slow operation detected: ${operation} took ${duration.toFixed(2)}ms`);
-    }
   }
 }

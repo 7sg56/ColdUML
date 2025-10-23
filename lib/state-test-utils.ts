@@ -3,7 +3,7 @@
  * Used to verify proper data flow and state persistence
  */
 
-import { AppState, AppStorage, StateValidator, TemplateManager } from './app-state';
+import { AppStorage, StateValidator, TemplateManager } from './app-state';
 
 export interface StateTestResult {
   success: boolean;

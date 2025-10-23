@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useRef, useCallback, useEffect, useImperativeHandle, forwardRef, useState } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { configureEditorForUML, insertTemplateAtCursor } from '@/lib/editor-utils';
 import { useEditorState } from './AppStateProvider';
@@ -26,9 +26,15 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
 }, ref) => {
   const editorRef = useRef<unknown>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isClient, setIsClient] = useState(false);
   
   // Use centralized state management for editor-specific functionality
   const { setContent, preferences } = useEditorState();
+
+  // Ensure we only render Monaco editor on client side to avoid hydration issues
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
@@ -154,10 +160,20 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
       }
     });
 
-    // Set the appropriate theme - use setTimeout to ensure themes are defined
-    setTimeout(() => {
-      monaco.editor.setTheme(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
-    }, 0);
+    // Set the appropriate theme - ensure it's applied immediately
+    const applyTheme = () => {
+      try {
+        monaco.editor.setTheme(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
+      } catch (error) {
+        console.warn('Failed to set custom Monaco theme, falling back to built-in themes:', error);
+        // Fallback to built-in themes
+        monaco.editor.setTheme(theme === 'dark' ? 'vs-dark' : 'vs');
+      }
+    };
+    
+    // Apply theme immediately and also with a small delay to ensure themes are registered
+    applyTheme();
+    setTimeout(applyTheme, 10);
 
     // Track cursor position changes
     editor.onDidChangeCursorPosition((e: { position: { lineNumber: number; column: number } }) => {
@@ -235,18 +251,24 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
       const monaco = (window as unknown as { monaco?: Record<string, unknown> }).monaco;
       if (monaco && typeof monaco === 'object' && 'editor' in monaco) {
         const monacoEditor = monaco.editor as Record<string, unknown>;
-        // Ensure the theme is applied
-        try {
-          if (typeof monacoEditor.setTheme === 'function') {
-            (monacoEditor.setTheme as (theme: string) => void)(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
+        
+        const applyThemeChange = () => {
+          try {
+            if (typeof monacoEditor.setTheme === 'function') {
+              (monacoEditor.setTheme as (theme: string) => void)(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
+            }
+          } catch (error) {
+            console.warn('Failed to set custom Monaco theme, falling back to built-in themes:', error);
+            // Fallback to built-in themes
+            if (typeof monacoEditor.setTheme === 'function') {
+              (monacoEditor.setTheme as (theme: string) => void)(theme === 'dark' ? 'vs-dark' : 'vs');
+            }
           }
-        } catch (error) {
-          console.warn('Failed to set Monaco theme:', error);
-          // Fallback to built-in themes
-          if (typeof monacoEditor.setTheme === 'function') {
-            (monacoEditor.setTheme as (theme: string) => void)(theme === 'dark' ? 'vs-dark' : 'vs');
-          }
-        }
+        };
+        
+        // Apply theme change immediately and with a small delay to ensure it takes effect
+        applyThemeChange();
+        setTimeout(applyThemeChange, 10);
       }
     }
   }, [theme]);
@@ -268,13 +290,14 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
         </span>
       </div>
       <div className="h-[calc(100%-2rem)]">
-        <Editor
-          height="100%"
-          language="mermaid"
-          value={content}
-          onChange={handleEditorChange}
-          onMount={handleEditorDidMount}
-          options={{
+        {isClient ? (
+          <Editor
+            height="100%"
+            language="mermaid"
+            value={content}
+            onChange={handleEditorChange}
+            onMount={handleEditorDidMount}
+            options={{
             minimap: { enabled: preferences.minimap },
             scrollBeyondLastLine: false,
             fontSize: preferences.fontSize,
@@ -335,7 +358,17 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
               showWords: true
             }
           }}
-        />
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center bg-editor-background">
+            <div className="text-muted-foreground">
+              <svg className="w-8 h-8 mx-auto mb-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <p className="text-sm">Loading editor...</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

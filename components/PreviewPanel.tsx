@@ -274,7 +274,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         clearTimeout(renderTimeoutRef.current);
       }
     };
-  }, [mermaidCode, renderDiagram, setIsLoading]);
+  }, [mermaidCode, renderDiagram]);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -307,6 +307,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
       <div className="flex-1 overflow-auto">
         <div 
           ref={containerRef}
+          data-testid="preview-container"
           className="min-h-full p-4"
           style={{
             backgroundColor: theme === 'dark' ? '#0f172a' : '#ffffff',

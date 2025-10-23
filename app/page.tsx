@@ -6,21 +6,20 @@ import EditorPanel, { EditorPanelRef } from '../components/EditorPanel';
 import HelperPanel from '../components/HelperPanel';
 import PreviewPanel from '../components/PreviewPanel';
 import { AppStateProvider, useEditorState, useThemeState, usePreviewState, useAppState } from '../components/AppStateProvider';
-import { copyToClipboard } from '../lib/clipboard';
+import { exportAsPNG, exportAsSVG, copyMermaidCode } from '../lib/export-utils';
+import { toast } from '../lib/toast-utils';
 
 // Import test utilities for development
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
   import('../lib/state-test-utils').then(({ StateTestUtils }) => {
     // Make test utilities available in development
     (window as unknown as { StateTestUtils?: typeof StateTestUtils }).StateTestUtils = StateTestUtils;
   });
 }
 
-// Main application component with state management
 function MermaidUMLEditor() {
   const editorRef = useRef<EditorPanelRef>(null);
   
-  // Use centralized state management hooks
   const { content, setCursorPosition, insertTemplate } = useEditorState();
   const { theme, toggleTheme } = useThemeState();
   const { setRenderError, setIsLoading } = usePreviewState();
@@ -29,30 +28,64 @@ function MermaidUMLEditor() {
   const handleCopyCode = async () => {
     try {
       setIsLoading(true);
-      await copyToClipboard(content);
-      // TODO: Add toast notification for successful copy
+      const result = await copyMermaidCode(content);
+      if (!result.success) {
+        console.error('Failed to copy code:', result.error);
+        toast.error(result.error || 'Failed to copy code to clipboard');
+      } else {
+        toast.success('Mermaid code copied to clipboard');
+      }
     } catch (error) {
       console.error('Failed to copy code:', error);
-      // TODO: Add toast notification for failed copy
+      toast.error('Failed to copy code to clipboard');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDownloadPNG = () => {
-    // Placeholder functionality - will be implemented in task 8
-    console.log('Download PNG functionality will be implemented in task 8');
+  const handleDownloadPNG = async () => {
+    try {
+      setIsLoading(true);
+      const result = await exportAsPNG({
+        quality: 1,
+        scale: 2
+      });
+      if (!result.success) {
+        console.error('Failed to export PNG:', result.error);
+        toast.error(result.error || 'Failed to export PNG');
+      } else {
+        toast.success(`PNG exported successfully: ${result.filename}`);
+      }
+    } catch (error) {
+      console.error('Failed to export PNG:', error);
+      toast.error('Failed to export PNG');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDownloadSVG = () => {
-    // Placeholder functionality - will be implemented in task 8
-    console.log('Download SVG functionality will be implemented in task 8');
+  const handleDownloadSVG = async () => {
+    try {
+      setIsLoading(true);
+      const result = await exportAsSVG();
+      if (!result.success) {
+        console.error('Failed to export SVG:', result.error);
+        toast.error(result.error || 'Failed to export SVG');
+      } else {
+        toast.success(`SVG exported successfully: ${result.filename}`);
+      }
+    } catch (error) {
+      console.error('Failed to export SVG:', error);
+      toast.error('Failed to export SVG');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResetEditor = () => {
     // Reset through state management system
     actions.resetToDefaults();
-    // TODO: Add toast notification for successful reset
+    toast.success('Editor reset to default content');
   };
 
   const handleEditorContentChange = () => {
@@ -128,7 +161,6 @@ function MermaidUMLEditor() {
   );
 }
 
-// Main component wrapped with state provider
 export default function Home() {
   return (
     <AppStateProvider>

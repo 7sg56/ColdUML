@@ -19,6 +19,7 @@ import {
   StateValidator,
   TemplateManager,
   PerformanceMonitor,
+  AppInitializer,
 } from "@/lib/app-state";
 
 // State action types
@@ -138,44 +139,68 @@ export function AppStateProvider({ children }: AppStateProviderProps) {
   useEffect(() => {
     if (isInitializedRef.current) return;
 
-    PerformanceMonitor.startTimer("state-initialization");
+    const initializeState = async () => {
+      PerformanceMonitor.startTimer("state-initialization");
 
-    try {
-      // Initialize theme first
-      const initialTheme = ThemeManager.initializeTheme();
+      try {
+        // Preload resources for faster startup
+        await AppInitializer.preloadResources();
 
-      // Load saved data
-      const savedContent = AppStorage.loadEditorContent();
-      const savedPreferences = AppStorage.loadPreferences();
-      const lastSaved = AppStorage.getLastSaved();
+        // Get initialization status
+        const initStatus = AppInitializer.getInitializationStatus();
+        
+        // Initialize theme first
+        const initialTheme = ThemeManager.initializeTheme();
 
-      // Initialize state with saved data
-      const initialState: Partial<AppState> = {
-        theme: initialTheme,
-        lastSaved,
-      };
+        // Load saved data
+        const savedContent = AppStorage.loadEditorContent();
+        const savedPreferences = AppStorage.loadPreferences();
+        const lastSaved = AppStorage.getLastSaved();
 
-      if (savedContent) {
-        initialState.editorContent = savedContent;
-      }
-
-      if (savedPreferences) {
-        initialState.preferences = {
-          ...DEFAULT_PREFERENCES,
-          ...savedPreferences,
+        // Initialize state with saved data
+        const initialState: Partial<AppState> = {
+          theme: initialTheme,
+          lastSaved,
         };
+
+        // Use saved content if available, otherwise use default
+        if (savedContent && StateValidator.validateEditorContent(savedContent)) {
+          initialState.editorContent = savedContent;
+        } else {
+          // Ensure we're using the default content for new users
+          initialState.editorContent = DEFAULT_STATE.editorContent;
+        }
+
+        if (savedPreferences && StateValidator.validatePreferences(savedPreferences)) {
+          initialState.preferences = {
+            ...DEFAULT_PREFERENCES,
+            ...savedPreferences,
+          };
+        } else {
+          // Use default preferences for new users
+          initialState.preferences = DEFAULT_PREFERENCES;
+        }
+
+        dispatch({ type: "INITIALIZE_STATE", payload: initialState });
+
+        const duration = PerformanceMonitor.endTimer("state-initialization");
+        PerformanceMonitor.logPerformance("state-initialization", duration);
+
+        // Log initialization status for debugging
+        if (process.env.NODE_ENV === 'development') {
+          console.log('App initialization status:', initStatus);
+        }
+
+        isInitializedRef.current = true;
+      } catch (error) {
+        console.error("Failed to initialize app state:", error);
+        // Fallback to default state
+        dispatch({ type: "INITIALIZE_STATE", payload: DEFAULT_STATE });
+        isInitializedRef.current = true;
       }
+    };
 
-      dispatch({ type: "INITIALIZE_STATE", payload: initialState });
-
-      const duration = PerformanceMonitor.endTimer("state-initialization");
-      PerformanceMonitor.logPerformance("state-initialization", duration);
-
-      isInitializedRef.current = true;
-    } catch (error) {
-      console.error("Failed to initialize app state:", error);
-      isInitializedRef.current = true;
-    }
+    initializeState();
   }, []);
 
   // Debounced save to localStorage
@@ -348,6 +373,24 @@ export function useAppMetadata() {
       ? Date.now() - state.lastSaved.getTime() > 1000
       : false,
     storageAvailable: AppStorage.isStorageAvailable(),
+  };
+}
+
+// Hook for checking initialization status
+export function useInitializationStatus() {
+  const context = useContext(AppStateContext);
+  if (!context) {
+    throw new Error("useInitializationStatus must be used within an AppStateProvider");
+  }
+  const { state } = context;
+
+  return {
+    isUsingDefaultContent: AppInitializer.isUsingDefaultContent(state.editorContent),
+    isFirstTimeUser: AppInitializer.isFirstTimeUser(),
+    hasUnsavedChanges: state.lastSaved 
+      ? Date.now() - state.lastSaved.getTime() > 5000 // 5 seconds threshold
+      : false,
+    initializationStatus: AppInitializer.getInitializationStatus(),
   };
 }
 

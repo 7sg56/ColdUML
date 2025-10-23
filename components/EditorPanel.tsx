@@ -283,13 +283,17 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
   }, []);
 
   return (
-    <div className="h-full w-full border-r border-gray-200 dark:border-gray-700">
-      <div className="h-8 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center px-3">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+    <div className="h-full w-full mobile-panel-height">
+      <div className="panel-header">
+        <span className="text-sm font-medium text-muted-foreground">
           Editor
         </span>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="hidden sm:inline">Mermaid</span>
+          {theme === 'dark' ? '🌙' : '☀️'}
+        </div>
       </div>
-      <div className="h-[calc(100%-2rem)]">
+      <div className="h-[calc(100%-3rem)] sm:h-[calc(100%-2.5rem)]">
         {isClient ? (
           <Editor
             height="100%"
@@ -298,32 +302,37 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
             options={{
-            minimap: { enabled: preferences.minimap },
+            minimap: { enabled: preferences.minimap && (typeof window !== 'undefined' ? window.innerWidth > 768 : true) }, // Disable minimap on mobile
             scrollBeyondLastLine: false,
-            fontSize: preferences.fontSize,
+            fontSize: Math.max(preferences.fontSize, (typeof window !== 'undefined' && window.innerWidth < 640) ? 12 : 14), // Responsive font size
             lineNumbers: preferences.lineNumbers ? 'on' : 'off',
             roundedSelection: false,
             scrollbar: {
               vertical: 'auto',
               horizontal: 'auto',
+              verticalScrollbarSize: (typeof window !== 'undefined' && window.innerWidth < 640) ? 8 : 14, // Thinner scrollbars on mobile
+              horizontalScrollbarSize: (typeof window !== 'undefined' && window.innerWidth < 640) ? 8 : 14,
             },
             automaticLayout: true,
             tabSize: 2,
             insertSpaces: true,
             wordWrap: preferences.wordWrap ? 'on' : 'off',
-            lineDecorationsWidth: 10,
-            lineNumbersMinChars: 3,
-            glyphMargin: false,
-            folding: true,
+            lineDecorationsWidth: (typeof window !== 'undefined' && window.innerWidth < 640) ? 5 : 10, // Smaller decorations on mobile
+            lineNumbersMinChars: (typeof window !== 'undefined' && window.innerWidth < 640) ? 2 : 3,
+            glyphMargin: typeof window === 'undefined' || window.innerWidth > 640, // Hide glyph margin on mobile
+            folding: typeof window === 'undefined' || window.innerWidth > 640, // Disable folding on mobile
             selectOnLineNumbers: true,
             selectionHighlight: false,
             cursorStyle: 'line',
             cursorBlinking: 'blink',
             renderWhitespace: 'selection',
-            contextmenu: true,
-            mouseWheelZoom: true,
+            contextmenu: typeof window === 'undefined' || window.innerWidth > 640, // Disable context menu on mobile
+            mouseWheelZoom: typeof window === 'undefined' || window.innerWidth > 640, // Disable zoom on mobile
             smoothScrolling: true,
             cursorSmoothCaretAnimation: 'on',
+            overviewRulerBorder: false,
+            overviewRulerLanes: 0,
+            hideCursorInOverviewRuler: true,
             find: {
               addExtraSpaceOnTop: false,
               autoFindInSelection: 'never',
@@ -361,11 +370,11 @@ const EditorPanel = forwardRef<EditorPanelRef, EditorPanelProps>(({
           />
         ) : (
           <div className="h-full flex items-center justify-center bg-editor-background">
-            <div className="text-muted-foreground">
-              <svg className="w-8 h-8 mx-auto mb-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="text-muted-foreground text-center">
+              <svg className="loading-spinner w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <p className="text-sm">Loading editor...</p>
+              <p className="text-xs sm:text-sm">Loading editor...</p>
             </div>
           </div>
         )}

@@ -101,6 +101,68 @@ export function useAppState(): AppContextValue {
   return context;
 }
 
+// Utility functions for application initialization
+export class AppInitializer {
+  static isFirstTimeUser(): boolean {
+    // Only check on client side
+    if (typeof window === 'undefined') {
+      return false; // Assume not first time on server
+    }
+    
+    try {
+      const hasContent = AppStorage.loadEditorContent();
+      const hasPreferences = AppStorage.loadPreferences();
+      const welcomeShown = localStorage.getItem('mermaid-editor-welcome-shown');
+      
+      return !hasContent && !hasPreferences && !welcomeShown;
+    } catch {
+      return true; // Assume first time if we can't check
+    }
+  }
+
+  static isUsingDefaultContent(content: string): boolean {
+    return content === DEFAULT_MERMAID_CONTENT;
+  }
+
+  static getInitializationStatus(): {
+    isFirstTime: boolean;
+    hasStoredContent: boolean;
+    storageAvailable: boolean;
+  } {
+    // Only check on client side
+    if (typeof window === 'undefined') {
+      return {
+        isFirstTime: false,
+        hasStoredContent: false,
+        storageAvailable: false
+      };
+    }
+    
+    return {
+      isFirstTime: AppInitializer.isFirstTimeUser(),
+      hasStoredContent: !!AppStorage.loadEditorContent(),
+      storageAvailable: AppStorage.isStorageAvailable()
+    };
+  }
+
+  static async preloadResources(): Promise<void> {
+    // Preload any resources that might be needed
+    // This could include fonts, themes, or other assets
+    try {
+      // Ensure theme is applied early
+      const savedTheme = AppStorage.loadTheme();
+      if (savedTheme) {
+        ThemeManager.applyTheme(savedTheme);
+      }
+      
+      // Preload any other critical resources here
+      await Promise.resolve(); // Placeholder for future preloading
+    } catch (error) {
+      console.warn('Failed to preload some resources:', error);
+    }
+  }
+}
+
 // Storage keys for localStorage
 export const STORAGE_KEYS = {
   EDITOR_CONTENT: 'mermaid-editor-content',
@@ -200,8 +262,20 @@ export class AppStorage {
 // Theme utilities
 export class ThemeManager {
   static applyTheme(theme: 'light' | 'dark'): void {
+    // Add theme transitioning class to prevent flash
+    document.documentElement.classList.add('theme-transitioning');
+    
+    // Apply theme attributes
     document.documentElement.setAttribute('data-theme', theme);
     document.documentElement.classList.toggle('dark', theme === 'dark');
+    
+    // Update body class for additional styling
+    document.body.classList.toggle('dark', theme === 'dark');
+    
+    // Remove transitioning class after a short delay
+    setTimeout(() => {
+      document.documentElement.classList.remove('theme-transitioning');
+    }, 100);
   }
 
   static getSystemTheme(): 'light' | 'dark' {
@@ -225,6 +299,91 @@ export class ThemeManager {
     ThemeManager.applyTheme(newTheme);
     AppStorage.saveTheme(newTheme);
     return newTheme;
+  }
+
+  static getMermaidThemeConfig(theme: 'light' | 'dark') {
+    const baseConfig = {
+      startOnLoad: false,
+      theme: (theme === 'dark' ? 'dark' : 'default') as 'dark' | 'default',
+      classDiagram: {
+        htmlLabels: false,
+        curve: 'basis' as const
+      },
+      flowchart: {
+        htmlLabels: false,
+        curve: 'basis' as const
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        bottomMarginAdj: 1,
+        useMaxWidth: true,
+        rightAngles: false,
+        showSequenceNumbers: false
+      },
+      fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+      fontSize: 16,
+      logLevel: 'error' as const,
+      securityLevel: 'loose' as const,
+      deterministicIds: true,
+      deterministicIDSeed: 'mermaid-uml-editor',
+      wrap: true,
+      maxTextSize: 90000,
+      htmlLabels: false
+    };
+
+    // Theme-specific variables
+    if (theme === 'light') {
+      return {
+        ...baseConfig,
+        themeVariables: {
+          primaryColor: '#2563eb',
+          primaryTextColor: '#0f172a',
+          primaryBorderColor: '#e2e8f0',
+          lineColor: '#94a3b8',
+          secondaryColor: '#f1f5f9',
+          tertiaryColor: '#f8fafc',
+          background: '#ffffff',
+          mainBkg: '#ffffff',
+          secondBkg: '#f8fafc',
+          tertiaryBkg: '#f1f5f9',
+          secondaryBorderColor: '#cbd5e1',
+          tertiaryBorderColor: '#94a3b8',
+          secondaryTextColor: '#475569',
+          tertiaryTextColor: '#64748b',
+          textColor: '#0f172a'
+        }
+      };
+    } else {
+      return {
+        ...baseConfig,
+        themeVariables: {
+          primaryColor: '#3b82f6',
+          primaryTextColor: '#f8fafc',
+          primaryBorderColor: '#334155',
+          lineColor: '#64748b',
+          secondaryColor: '#1e293b',
+          tertiaryColor: '#0f172a',
+          background: '#0a0a0a',
+          mainBkg: '#0f172a',
+          secondBkg: '#1e293b',
+          tertiaryBkg: '#334155',
+          secondaryBorderColor: '#475569',
+          tertiaryBorderColor: '#64748b',
+          secondaryTextColor: '#cbd5e1',
+          tertiaryTextColor: '#94a3b8',
+          textColor: '#f8fafc'
+        }
+      };
+    }
   }
 }
 

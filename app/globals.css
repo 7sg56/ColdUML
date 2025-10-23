@@ -184,3 +184,302 @@ body {
   width: 100% !important;
   max-width: 100% !important;
 }
+
+/* Enhanced responsive design utilities */
+@media (max-width: 768px) {
+  /* Mobile-specific adjustments */
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  /* Adjust panel heights on mobile */
+  .mobile-panel-height {
+    min-height: 300px;
+    max-height: 50vh;
+  }
+  
+  /* Helper panel adjustments for mobile */
+  .helper-panel-mobile {
+    order: -1; /* Show helper panel first on mobile */
+    padding: 0.75rem;
+  }
+  
+  /* Editor panel adjustments for mobile */
+  .editor-panel-mobile {
+    min-height: 40vh;
+  }
+  
+  /* Preview panel adjustments for mobile */
+  .preview-panel-mobile {
+    min-height: 40vh;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Small mobile adjustments */
+  .sm-mobile-text {
+    font-size: 0.875rem;
+  }
+  
+  .sm-mobile-padding {
+    padding: 0.5rem;
+  }
+  
+  /* Compact header on small screens */
+  .header-compact {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .header-compact h1 {
+    font-size: 1.125rem;
+  }
+  
+  .header-compact button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop enhancements */
+  .desktop-sidebar {
+    width: 16rem; /* 256px */
+    flex-shrink: 0;
+  }
+  
+  .desktop-main-content {
+    flex: 1;
+    min-width: 0; /* Prevent flex item from overflowing */
+  }
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+/* Prevent transition on theme change to avoid flash */
+.theme-transitioning * {
+  transition: none !important;
+}
+
+/* Enhanced panel styling */
+.panel-container {
+  background-color: var(--panel-background);
+  border-color: var(--panel-border);
+}
+
+.panel-header {
+  background-color: var(--header-background);
+  border-bottom: 1px solid var(--header-border);
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-content {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Button variants */
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: color-mix(in srgb, var(--primary) 90%, transparent);
+}
+
+.btn-primary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.btn-secondary {
+  background-color: var(--button-background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: var(--button-hover);
+}
+
+.btn-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.btn-ghost:hover {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.btn-ghost:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+/* Loading states */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  height: 1rem;
+  width: 1rem;
+}
+
+.loading-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
+/* Initialization and welcome animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.4s ease-out;
+}
+
+.animate-zoom-in {
+  animation: zoomIn 0.2s ease-out;
+}
+
+/* Loading screen specific styles */
+.loading-screen {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.loading-screen-exit {
+  animation: fadeIn 0.3s ease-out reverse;
+}
+
+/* Welcome message animations */
+.welcome-overlay {
+  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(2px);
+}
+
+.welcome-content {
+  animation: slideUp 0.4s ease-out;
+}
+
+/* Focus visible improvements for better accessibility */
+.focus-visible:focus {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Improved button hover states */
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Smooth scrolling for better UX */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better text selection */
+::selection {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Loading state improvements */
+.loading-state {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* Improved focus management */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 1000;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Staggered animation for loading dots */
+.loading-dot-1 {
+  animation-delay: 0ms;
+}
+
+.loading-dot-2 {
+  animation-delay: 150ms;
+}
+
+.loading-dot-3 {
+  animation-delay: 300ms;
+}

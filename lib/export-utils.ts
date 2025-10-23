@@ -192,6 +192,24 @@ function generateFilename(baseName: string, extension: string): string {
  */
 export async function exportAsSVG(options: Partial<ExportOptions> = {}): Promise<ExportResult> {
   try {
+    // Validate export options
+    const validationErrors = validateExportOptions(options);
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        error: `Invalid export options: ${validationErrors.join(', ')}`
+      };
+    }
+
+    // Check if export is supported
+    const support = isExportSupported();
+    if (!support.svg) {
+      return {
+        success: false,
+        error: 'SVG export is not supported in this browser. Please try a different browser.'
+      };
+    }
+
     const svg = getRenderedSVG();
     if (!svg) {
       return {
@@ -224,6 +242,24 @@ export async function exportAsSVG(options: Partial<ExportOptions> = {}): Promise
  */
 export async function exportAsPNG(options: Partial<ExportOptions> = {}): Promise<ExportResult> {
   try {
+    // Validate export options
+    const validationErrors = validateExportOptions(options);
+    if (validationErrors.length > 0) {
+      return {
+        success: false,
+        error: `Invalid export options: ${validationErrors.join(', ')}`
+      };
+    }
+
+    // Check if export is supported
+    const support = isExportSupported();
+    if (!support.png) {
+      return {
+        success: false,
+        error: 'PNG export is not supported in this browser. Please try SVG export instead.'
+      };
+    }
+
     const svg = getRenderedSVG();
     if (!svg) {
       return {
@@ -260,6 +296,30 @@ export async function exportAsPNG(options: Partial<ExportOptions> = {}): Promise
  */
 export async function copyMermaidCode(code: string): Promise<ExportResult> {
   try {
+    // Validate input
+    if (!code || typeof code !== 'string') {
+      return {
+        success: false,
+        error: 'No content to copy. Please ensure there is content in the editor.'
+      };
+    }
+
+    if (code.trim().length === 0) {
+      return {
+        success: false,
+        error: 'Cannot copy empty content. Please add some content to the editor first.'
+      };
+    }
+
+    // Check if clipboard is supported
+    const support = isExportSupported();
+    if (!support.clipboard) {
+      return {
+        success: false,
+        error: 'Clipboard access is not supported in this browser or context.'
+      };
+    }
+
     // Use the existing clipboard utility
     const { copyToClipboard } = await import('./clipboard');
     await copyToClipboard(code);

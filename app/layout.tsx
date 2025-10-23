@@ -15,6 +15,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CoolUML",
   description: "A powerful UML diagram editor using Mermaid syntax with real-time preview and helper tools",
+  viewport: "width=device-width, initial-scale=1",
 };
 
 export default function RootLayout({

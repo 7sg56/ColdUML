@@ -2,357 +2,212 @@
 
 import { useRef, useState, useEffect } from "react";
 import Header from "../components/Header";
-import EditorPanel, { EditorPanelRef } from "../components/EditorPanel";
+import SimpleEditor, { SimpleEditorRef } from "../components/SimpleEditor";
 import HelperPanel from "../components/HelperPanel";
-import PreviewPanel from "../components/PreviewPanel";
-
-import {
-  AppStateProvider,
-  useEditorState,
-  useThemeState,
-  usePreviewState,
-  useAppState,
-} from "../components/AppStateProvider";
+import SimplePreview from "../components/SimplePreview";
 import { exportAsPNG, exportAsSVG, copyMermaidCode } from "../lib/export-utils";
 import { toast } from "../lib/toast-utils";
-import ErrorBoundary from "../components/ErrorBoundary";
-import { withErrorHandling } from "../lib/error-handling";
 
-// Import test utilities for development
-if (process.env.NODE_ENV === "development" && typeof window !== "undefined") {
-  import("../lib/state-test-utils").then(({ StateTestUtils }) => {
-    // Make test utilities available in development
-    (
-      window as unknown as { StateTestUtils?: typeof StateTestUtils }
-    ).StateTestUtils = StateTestUtils;
-  });
-}
+// Default UML content for initialization
+const DEFAULT_UML_CONTENT = `classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+        +move()
+    }
+    
+    class Dog {
+        +String breed
+        +bark()
+        +wagTail()
+    }
+    
+    class Cat {
+        +String color
+        +meow()
+        +purr()
+    }
+    
+    Animal <|-- Dog
+    Animal <|-- Cat`;
 
-// Performance monitoring for development
-if (process.env.NODE_ENV === "development") {
-  // Monitor performance metrics
-  if (typeof window !== "undefined" && "performance" in window) {
-    window.addEventListener("load", () => {
-      setTimeout(() => {
-        const navigation = performance.getEntriesByType(
-          "navigation"
-        )[0] as PerformanceNavigationTiming;
-        if (navigation) {
-          console.log("App Performance Metrics:", {
-            domContentLoaded:
-              navigation.domContentLoadedEventEnd -
-              navigation.domContentLoadedEventStart,
-            loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
-            totalLoadTime: navigation.loadEventEnd - navigation.fetchStart,
-          });
-        }
-      }, 0);
-    });
-
-    // Add global error handlers to catch unhandled errors
-    window.addEventListener('error', (event) => {
-      // Only log if there's meaningful error information
-      if (event.message || event.error) {
-        console.error('Global error caught:', {
-          message: event.message || 'No message',
-          filename: event.filename || 'Unknown file',
-          lineno: event.lineno || 0,
-          colno: event.colno || 0,
-          error: event.error ? {
-            name: event.error.name,
-            message: event.error.message,
-            stack: event.error.stack
-          } : 'No error object'
-        });
-      } else {
-        console.warn('Global error event with no meaningful information:', event);
-      }
-    });
-
-    window.addEventListener('unhandledrejection', (event) => {
-      // Handle empty or undefined rejection reasons
-      const reason = event.reason;
-      if (reason !== null && reason !== undefined) {
-        // Check for empty objects specifically
-        if (typeof reason === 'object' && Object.keys(reason).length === 0) {
-          console.warn('Unhandled promise rejection with empty object - this may indicate a library error');
-        } else {
-          console.error('Unhandled promise rejection:', {
-            reason: typeof reason === 'object' ? {
-              name: reason.name || 'Unknown',
-              message: reason.message || 'No message',
-              stack: reason.stack || 'No stack trace'
-            } : reason,
-            reasonType: typeof reason
-          });
-        }
-      } else {
-        console.warn('Unhandled promise rejection with empty reason');
-      }
-      // Prevent the default behavior (logging to console)
-      event.preventDefault();
-    });
+// Get initial theme synchronously to prevent flash
+function getInitialTheme(): 'light' | 'dark' {
+  if (typeof window === 'undefined') return 'light';
+  
+  const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+  if (savedTheme) {
+    return savedTheme;
   }
+  
+  // Check system preference if no saved theme
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  return prefersDark ? 'dark' : 'light';
 }
 
 function MermaidUMLEditor() {
-  const editorRef = useRef<EditorPanelRef>(null);
-  const { content, setCursorPosition, insertTemplate } = useEditorState();
-  const { theme, toggleTheme } = useThemeState();
-  const { setRenderError, setIsLoading } = usePreviewState();
-  const { actions } = useAppState();
+  const editorRef = useRef<SimpleEditorRef>(null);
+  
+  // Simple state management with useState hooks
+  const [content, setContent] = useState(DEFAULT_UML_CONTENT);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => getInitialTheme());
+  const [isThemeReady, setIsThemeReady] = useState(false);
+  // Simple error state (currently unused but kept for future use)
+  // const [error, setError] = useState<string | null>(null);
+
+  // Apply initial theme immediately
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+      setIsThemeReady(true);
+    }
+  }, [theme]);
+
+  // Apply theme changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+  };
 
 
   const handleCopyCode = async () => {
-    const result = await withErrorHandling(
-      async () => {
-        setIsLoading(true);
-        const copyResult = await copyMermaidCode(content);
-        if (!copyResult.success) {
-          throw new Error(
-            copyResult.error || "Failed to copy code to clipboard"
-          );
-        }
-        return copyResult;
-      },
-      {
-        operation: "copy-code",
-        content: content.substring(0, 100),
-      }
-    );
-
-    setIsLoading(false);
-
+    const result = await copyMermaidCode(content);
     if (result.success) {
-      toast.success("Mermaid code copied to clipboard");
+      toast.success("Code copied to clipboard");
     } else {
-      const errorDetails = result.error!;
-      console.error("Failed to copy code:", errorDetails);
-      toast.error(errorDetails.message);
+      toast.error(result.error || "Failed to copy code");
     }
   };
 
   const handleDownloadPNG = async () => {
-    const result = await withErrorHandling(
-      async () => {
-        setIsLoading(true);
-        const exportResult = await exportAsPNG({
-          quality: 1,
-          scale: 2,
-        });
-        if (!exportResult.success) {
-          throw new Error(exportResult.error || "Failed to export PNG");
-        }
-        return exportResult;
-      },
-      {
-        operation: "export-png",
-        format: "png",
-      }
-    );
-
-    setIsLoading(false);
-
+    const result = await exportAsPNG();
     if (result.success) {
-      toast.success(`PNG exported successfully: ${result.data!.filename}`);
+      toast.success("PNG exported successfully");
     } else {
-      const errorDetails = result.error!;
-      console.error("Failed to export PNG:", errorDetails);
-      toast.error(errorDetails.message);
+      toast.error(result.error || "Failed to export PNG");
     }
   };
 
   const handleDownloadSVG = async () => {
-    const result = await withErrorHandling(
-      async () => {
-        setIsLoading(true);
-        const exportResult = await exportAsSVG();
-        if (!exportResult.success) {
-          throw new Error(exportResult.error || "Failed to export SVG");
-        }
-        return exportResult;
-      },
-      {
-        operation: "export-svg",
-        format: "svg",
-      }
-    );
-
-    setIsLoading(false);
-
+    const result = await exportAsSVG();
     if (result.success) {
-      toast.success(`SVG exported successfully: ${result.data!.filename}`);
+      toast.success("SVG exported successfully");
     } else {
-      const errorDetails = result.error!;
-      console.error("Failed to export SVG:", errorDetails);
-      toast.error(errorDetails.message);
+      toast.error(result.error || "Failed to export SVG");
     }
   };
 
   const handleResetEditor = () => {
-    // Reset through state management system
-    actions.resetToDefaults();
+    setContent(DEFAULT_UML_CONTENT);
     toast.success("Editor reset to default content");
   };
 
-  const handleEditorContentChange = () => {
-    // Content changes are now handled through the centralized state
-    // The EditorPanel will call the state management directly
-  };
-
-  const handleCursorPositionChange = (position: number) => {
-    setCursorPosition(position);
+  const handleEditorContentChange = (newContent: string) => {
+    setContent(newContent);
   };
 
   const handleInsertTemplate = (template: string) => {
-    // Use centralized template insertion
-    insertTemplate(template);
-
-    // Also update the editor directly for immediate feedback
+    // Simple template insertion using the editor's built-in method
     if (editorRef.current) {
       editorRef.current.insertTemplate(template);
     }
   };
 
-  const handleRenderError = (error: string) => {
-    setRenderError(error);
+  const handleRenderError = (errorMessage: string) => {
+    // Simple error handling - could be expanded later
+    console.warn('Render error:', errorMessage);
   };
 
   const handleRenderSuccess = () => {
-    setRenderError(null);
+    // Simple success handling - could be expanded later
+    console.log('Render success');
   };
 
-  return (
-    <>
-      <div className="h-screen flex flex-col bg-background text-foreground font-sans">
-
-        <ErrorBoundary
-          onError={(error, errorInfo) => {
-            console.error(
-              "Application error boundary triggered:",
-              error,
-              errorInfo
-            );
-            // In production, report to error tracking service
-          }}
-        >
-          <Header
-            onCopyCode={handleCopyCode}
-            onDownloadPNG={handleDownloadPNG}
-            onDownloadSVG={handleDownloadSVG}
-            onResetEditor={handleResetEditor}
-            onThemeToggle={toggleTheme}
-            currentTheme={theme}
-          />
-
-          {/* Main content area with enhanced responsive three-panel layout */}
-          <main
-            id="main-content"
-            className="flex-1 flex flex-col lg:flex-row overflow-hidden"
-            role="main"
-            aria-label="UML diagram editor workspace"
-          >
-            {/* Helper Panel - Responsive positioning */}
-            <aside
-              className="helper-panel-mobile lg:desktop-sidebar order-first lg:order-none"
-              role="complementary"
-              aria-label="UML template helpers"
-            >
-              <ErrorBoundary
-                fallback={
-                  <div className="p-4 text-center text-muted-foreground">
-                    <p className="text-sm">Helper panel unavailable</p>
-                  </div>
-                }
-              >
-                <HelperPanel onInsertTemplate={handleInsertTemplate} />
-              </ErrorBoundary>
-            </aside>
-
-            {/* Editor and Preview panels container */}
-            <div
-              className="desktop-main-content flex flex-col sm:flex-row overflow-hidden mobile-stack"
-              role="region"
-              aria-label="Editor and preview panels"
-            >
-              {/* Editor Panel - Responsive sizing */}
-              <section
-                className="flex-1 panel-container border-b sm:border-b-0 sm:border-r border-panel-border flex flex-col editor-panel-mobile"
-                role="region"
-                aria-label="Mermaid code editor"
-              >
-                <ErrorBoundary
-                  fallback={
-                    <div className="h-full flex items-center justify-center text-center p-4">
-                      <div>
-                        <p className="text-muted-foreground mb-2">
-                          Editor unavailable
-                        </p>
-                        <button
-                          onClick={() => window.location.reload()}
-                          className="text-sm text-primary hover:underline"
-                        >
-                          Reload page
-                        </button>
-                      </div>
-                    </div>
-                  }
-                >
-                  <EditorPanel
-                    ref={editorRef}
-                    content={content}
-                    onChange={handleEditorContentChange}
-                    onCursorPositionChange={handleCursorPositionChange}
-                    theme={theme}
-                  />
-                </ErrorBoundary>
-              </section>
-
-              {/* Preview Panel - Responsive sizing */}
-              <section
-                className="flex-1 panel-container flex flex-col preview-panel-mobile"
-                role="region"
-                aria-label="Diagram preview"
-              >
-                <ErrorBoundary
-                  fallback={
-                    <div className="h-full flex items-center justify-center text-center p-4">
-                      <div>
-                        <p className="text-muted-foreground mb-2">
-                          Preview unavailable
-                        </p>
-                        <button
-                          onClick={() => window.location.reload()}
-                          className="text-sm text-primary hover:underline"
-                        >
-                          Reload page
-                        </button>
-                      </div>
-                    </div>
-                  }
-                >
-                  <PreviewPanel
-                    mermaidCode={content}
-                    theme={theme}
-                    onRenderError={handleRenderError}
-                    onRenderSuccess={handleRenderSuccess}
-                  />
-                </ErrorBoundary>
-              </section>
-            </div>
-          </main>
-        </ErrorBoundary>
+  // Show loading screen until theme is ready
+  if (!isThemeReady) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background text-foreground">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-sm text-muted-foreground">Loading editor...</p>
+        </div>
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div className="h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
+      <Header
+        onCopyCode={handleCopyCode}
+        onDownloadPNG={handleDownloadPNG}
+        onDownloadSVG={handleDownloadSVG}
+        onResetEditor={handleResetEditor}
+        onThemeToggle={toggleTheme}
+        currentTheme={theme}
+      />
+
+      {/* Main content area with responsive three-panel layout */}
+      <main
+        id="main-content"
+        className="flex-1 flex flex-col xl:flex-row overflow-hidden"
+        role="main"
+        aria-label="UML diagram editor workspace"
+      >
+        {/* Helper Panel - Responsive positioning */}
+        <aside
+          className="w-full xl:w-64 flex-shrink-0 border-b xl:border-b-0 xl:border-r border-panel-border bg-panel-background"
+          role="complementary"
+          aria-label="UML template helpers"
+        >
+          <HelperPanel onInsertTemplate={handleInsertTemplate} />
+        </aside>
+
+        {/* Editor and Preview panels container */}
+        <div
+          className="flex-1 flex flex-col lg:flex-row overflow-hidden min-w-0"
+          role="region"
+          aria-label="Editor and preview panels"
+        >
+          {/* Editor Panel - Responsive sizing */}
+          <section
+            className="flex-1 min-h-0 border-b lg:border-b-0 lg:border-r border-panel-border flex flex-col"
+            role="region"
+            aria-label="Mermaid code editor"
+          >
+            <SimpleEditor
+              ref={editorRef}
+              content={content}
+              onChange={handleEditorContentChange}
+              theme={theme}
+            />
+          </section>
+
+          {/* Preview Panel - Responsive sizing */}
+          <section
+            className="flex-1 min-h-0 flex flex-col"
+            role="region"
+            aria-label="Diagram preview"
+          >
+            <SimplePreview
+              content={content}
+              theme={theme}
+              onError={handleRenderError}
+              onSuccess={handleRenderSuccess}
+            />
+          </section>
+        </div>
+      </main>
+    </div>
   );
 }
 
 export default function Home() {
-  return (
-    <ErrorBoundary>
-      <AppStateProvider>
-        <MermaidUMLEditor />
-      </AppStateProvider>
-    </ErrorBoundary>
-  );
+  return <MermaidUMLEditor />;
 }

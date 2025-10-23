@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAppMetadata } from './AppStateProvider';
 
 interface HeaderProps {
   onCopyCode: () => void;
@@ -22,13 +21,6 @@ export default function Header({
 }: HeaderProps) {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
-  const [isClient, setIsClient] = useState(false);
-  const { lastSaved, hasUnsavedChanges, storageAvailable } = useAppMetadata();
-
-  // Ensure we only show client-specific content after hydration
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
@@ -57,54 +49,21 @@ export default function Header({
     setShowResetConfirm(false);
   };
 
-  const handleCopyCode = () => {
-    try {
-      onCopyCode();
-    } catch (error) {
-      console.error('Failed to copy code:', error);
-    }
-  };
-
   return (
     <>
-      <header className="h-14 sm:h-16 bg-header-background border-b border-header-border flex items-center justify-between header-compact sm:px-4 flex-shrink-0 relative">
+      <header className="h-12 sm:h-14 lg:h-16 bg-header-background border-b border-header-border flex items-center justify-between px-2 sm:px-4 flex-shrink-0 relative">
         <div className="flex items-center gap-2 sm:gap-4 min-w-0">
           <h1 className="text-lg sm:text-xl font-semibold text-foreground truncate">
             <span className="hidden sm:inline">Mermaid UML Editor</span>
             <span className="sm:hidden">UML Editor</span>
           </h1>
-          {/* Status indicators - only show after client hydration and on larger screens */}
-          {isClient && (
-            <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground">
-              {hasUnsavedChanges && storageAvailable && (
-                <span className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
-                  <span className="hidden lg:inline">Unsaved changes</span>
-                  <span className="lg:hidden">Unsaved</span>
-                </span>
-              )}
-              {lastSaved && !hasUnsavedChanges && (
-                <span className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="hidden lg:inline">Saved {new Date(lastSaved).toLocaleTimeString()}</span>
-                  <span className="lg:hidden">Saved</span>
-                </span>
-              )}
-              {!storageAvailable && (
-                <span className="flex items-center gap-1 text-orange-500">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                  <span className="hidden lg:inline">Storage unavailable</span>
-                  <span className="lg:hidden">No storage</span>
-                </span>
-              )}
-            </div>
-          )}
+
         </div>
         
         <div className="flex items-center gap-1 sm:gap-2">
           {/* Copy Mermaid Code Button */}
           <button 
-            onClick={handleCopyCode}
+            onClick={onCopyCode}
             className="bg-button-background hover:bg-button-hover border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 px-2 sm:px-3 py-1.5 text-xs sm:text-sm rounded-md transition-colors"
             title="Copy Mermaid code to clipboard"
             aria-label="Copy Mermaid code to clipboard"

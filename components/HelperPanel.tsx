@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useEditorState } from './AppStateProvider';
 
 export interface UMLTemplate {
   id: string;
@@ -64,12 +63,9 @@ const KEYBOARD_SHORTCUTS: Record<string, string> = {
 export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
   const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1); // eslint-disable-line @typescript-eslint/no-unused-vars
-  const { insertTemplate } = useEditorState();
 
   const handleTemplateClick = (template: UMLTemplate) => {
-    // Use centralized template insertion
-    insertTemplate(template.template);
-    // Also call the prop callback for backward compatibility
+    // Simple template insertion using the callback
     onInsertTemplate(template.template);
   };
 
@@ -95,8 +91,8 @@ export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
   };
 
   return (
-    <div className="panel-container border-b lg:border-b-0 lg:border-r border-panel-border sm-mobile-padding lg:p-4 lg:w-64 flex-shrink-0">
-      <div className="panel-header border-b-0 px-0 py-2 lg:py-0 lg:mb-3">
+    <div className="h-full flex flex-col bg-panel-background p-2 sm:p-3 xl:p-4">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
         <h2 className="text-sm font-medium text-muted-foreground">
           <span className="hidden sm:inline">UML Templates</span>
           <span className="sm:hidden">Templates</span>
@@ -106,7 +102,7 @@ export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
         </span>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1.5 sm:gap-2" role="group" aria-label="UML template buttons">
+      <div className="responsive-grid flex-1" role="group" aria-label="UML template buttons">
         {UML_TEMPLATES.map((template, index) => (
           <button
             key={template.id}
@@ -117,7 +113,7 @@ export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
             onMouseLeave={() => setHoveredTemplate(null)}
             onFocus={() => setFocusedIndex(index)}
             onBlur={() => setFocusedIndex(-1)}
-            className="group relative px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-button-background hover:bg-button-hover border border-border focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background rounded-md transition-all duration-200 text-left"
+            className="group relative px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm bg-button-background hover:bg-button-hover border border-border focus:outline-none focus:ring-2 focus:ring-ring rounded-md transition-colors text-left"
             title={template.description}
             aria-label={`Insert ${template.label} template: ${template.description}`}
             tabIndex={0}
@@ -128,7 +124,7 @@ export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
               </span>
               <div className="flex items-center gap-1 ml-1">
                 {KEYBOARD_SHORTCUTS[template.id] && (
-                  <kbd className="hidden sm:inline px-1 py-0.5 text-xs font-mono bg-muted border border-border rounded opacity-60 group-hover:opacity-100 transition-opacity">
+                  <kbd className="hidden xl:inline px-1 py-0.5 text-xs font-mono bg-muted border border-border rounded opacity-60 group-hover:opacity-100 transition-opacity">
                     {KEYBOARD_SHORTCUTS[template.id]}
                   </kbd>
                 )}
@@ -149,9 +145,9 @@ export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
               </div>
             </div>
             
-            {/* Tooltip for desktop */}
+            {/* Tooltip for desktop - only show when helper panel is on the side */}
             {hoveredTemplate === template.id && (
-              <div className="absolute z-10 left-full ml-2 top-0 bg-popover border border-border rounded-md shadow-lg p-2 min-w-[200px] hidden lg:block">
+              <div className="absolute z-10 left-full ml-2 top-0 bg-popover border border-border rounded-md shadow-lg p-2 min-w-[200px] hidden xl:block">
                 <div className="text-xs font-medium text-popover-foreground mb-1">
                   {template.label}
                 </div>
@@ -167,26 +163,20 @@ export default function HelperPanel({ onInsertTemplate }: HelperPanelProps) {
         ))}
       </div>
       
-      {/* Keyboard shortcuts hint - hidden on mobile */}
-      <div className="hidden lg:block mt-4 pt-3 border-t border-border">
+      {/* Keyboard shortcuts hint - only show when helper panel is on the side */}
+      <div className="hidden xl:block mt-auto pt-3 border-t border-border">
         <div className="text-xs text-muted-foreground space-y-1">
-          <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 text-xs font-mono bg-muted border border-border rounded">
+          <div className="flex items-center gap-2">
+            <kbd className="px-1.5 py-0.5 font-mono bg-muted border border-border rounded">
               Click
             </kbd>
             <span>Insert template</span>
           </div>
-          <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 text-xs font-mono bg-muted border border-border rounded">
-              Cmd+1-5
+          <div className="flex items-center gap-2">
+            <kbd className="px-1.5 py-0.5 font-mono bg-muted border border-border rounded">
+              ⌘1-5
             </kbd>
             <span>Quick insert</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <kbd className="px-1.5 py-0.5 text-xs font-mono bg-muted border border-border rounded">
-              Enter
-            </kbd>
-            <span>Insert when focused</span>
           </div>
         </div>
       </div>

@@ -137,22 +137,22 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* Mermaid diagram styling to prevent text truncation */
+/* Mermaid diagram styling with reliable fonts */
 .mermaid {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-  font-size: 16px !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 10px !important;
 }
 
 .mermaid svg {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+  font-family: Arial, sans-serif !important;
   max-width: 100% !important;
   height: auto !important;
 }
 
 .mermaid text,
 .mermaid tspan {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-  font-size: 14px !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 9px !important;
   fill: currentColor !important;
 }
 
@@ -185,75 +185,125 @@ body {
   max-width: 100% !important;
 }
 
-/* Enhanced responsive design utilities */
-@media (max-width: 768px) {
-  /* Mobile-specific adjustments */
-  .mobile-stack {
+/* Ensure proper scrolling in panels */
+.panel-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Prevent content from overflowing */
+.panel-content {
+  min-height: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive layout utilities */
+@media (max-width: 640px) {
+  /* Small mobile: Vertical stack with compact helper panel */
+  main {
     flex-direction: column !important;
   }
   
-  .mobile-full-width {
-    width: 100% !important;
-  }
-  
-  /* Adjust panel heights on mobile */
-  .mobile-panel-height {
-    min-height: 300px;
-    max-height: 50vh;
-  }
-  
-  /* Helper panel adjustments for mobile */
-  .helper-panel-mobile {
-    order: -1; /* Show helper panel first on mobile */
-    padding: 0.75rem;
-  }
-  
-  /* Editor panel adjustments for mobile */
-  .editor-panel-mobile {
-    min-height: 40vh;
-  }
-  
-  /* Preview panel adjustments for mobile */
-  .preview-panel-mobile {
-    min-height: 40vh;
-  }
-}
-
-@media (max-width: 640px) {
-  /* Small mobile adjustments */
-  .sm-mobile-text {
-    font-size: 0.875rem;
-  }
-  
-  .sm-mobile-padding {
-    padding: 0.5rem;
-  }
-  
-  /* Compact header on small screens */
-  .header-compact {
-    padding: 0.5rem 0.75rem;
-  }
-  
-  .header-compact h1 {
-    font-size: 1.125rem;
-  }
-  
-  .header-compact button {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.75rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  /* Desktop enhancements */
-  .desktop-sidebar {
-    width: 16rem; /* 256px */
+  main > aside {
+    min-height: auto;
+    max-height: 140px;
+    overflow-y: auto;
     flex-shrink: 0;
   }
   
-  .desktop-main-content {
+  main > div {
+    flex-direction: column !important;
+    min-height: 0;
     flex: 1;
-    min-width: 0; /* Prevent flex item from overflowing */
+  }
+  
+  main > div > section {
+    min-height: 180px;
+    flex: 1;
+  }
+  
+  /* Editor gets slightly more space on small screens */
+  main > div > section:first-child {
+    flex: 1.2;
+    min-height: 200px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  /* Tablet: Helper panel on top, editor and preview side by side */
+  main {
+    flex-direction: column !important;
+  }
+  
+  main > aside {
+    min-height: auto;
+    max-height: 160px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  
+  main > div {
+    flex-direction: row !important;
+    flex: 1;
+    min-height: 0;
+  }
+  
+  main > div > section {
+    flex: 1;
+    min-height: 300px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  /* Large tablet/small desktop: Helper panel on top, editor and preview side by side */
+  main {
+    flex-direction: column !important;
+  }
+  
+  main > aside {
+    min-height: auto;
+    max-height: 180px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  
+  main > div {
+    flex-direction: row !important;
+    flex: 1;
+    min-height: 0;
+  }
+  
+  main > div > section {
+    flex: 1;
+    min-height: 400px;
+  }
+}
+
+@media (min-width: 1280px) {
+  /* Desktop: Three-panel layout side by side */
+  main {
+    flex-direction: row !important;
+  }
+  
+  main > aside {
+    width: 16rem;
+    flex-shrink: 0;
+    min-height: auto;
+    max-height: none;
+    overflow-y: auto;
+  }
+  
+  main > div {
+    flex-direction: row !important;
+    flex: 1;
+    min-height: 0;
+  }
+  
+  main > div > section {
+    flex: 1;
+    min-height: auto;
   }
 }
 
@@ -262,29 +312,132 @@ body {
   transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
-/* Prevent transition on theme change to avoid flash */
-.theme-transitioning * {
-  transition: none !important;
+/* Responsive spacing utilities */
+.responsive-padding {
+  padding: 0.5rem;
 }
 
-/* Enhanced panel styling */
-.panel-container {
-  background-color: var(--panel-background);
-  border-color: var(--panel-border);
+@media (min-width: 640px) {
+  .responsive-padding {
+    padding: 0.75rem;
+  }
 }
 
+@media (min-width: 1280px) {
+  .responsive-padding {
+    padding: 1rem;
+  }
+}
+
+/* Responsive text utilities */
+.responsive-text {
+  font-size: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .responsive-text {
+    font-size: 0.875rem;
+  }
+}
+
+/* Layout container utilities */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+@media (min-width: 1280px) {
+  .layout-container-horizontal {
+    flex-direction: row;
+  }
+}
+
+/* Panel sizing utilities */
+.panel-compact {
+  min-height: 140px;
+  max-height: 140px;
+}
+
+@media (min-width: 641px) {
+  .panel-compact {
+    min-height: 160px;
+    max-height: 160px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .panel-compact {
+    min-height: 180px;
+    max-height: 180px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .panel-compact {
+    min-height: auto;
+    max-height: none;
+  }
+}
+
+/* Responsive utilities */
+.responsive-grid {
+  display: grid;
+  gap: 0.5rem;
+}
+
+/* Mobile: 2 columns for templates */
+@media (max-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.375rem;
+  }
+}
+
+/* Tablet: 3-4 columns when helper panel is on top */
+@media (min-width: 641px) and (max-width: 1279px) {
+  .responsive-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.5rem;
+  }
+}
+
+/* Desktop: Single column when helper panel is on side */
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+/* Panel height utilities */
+.panel-responsive-height {
+  min-height: 200px;
+}
+
+@media (min-width: 641px) {
+  .panel-responsive-height {
+    min-height: 300px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .panel-responsive-height {
+    min-height: 400px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .panel-responsive-height {
+    min-height: auto;
+  }
+}
+
+/* Panel styling */
 .panel-header {
   background-color: var(--header-background);
   border-bottom: 1px solid var(--header-border);
-  padding: 0.5rem 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.panel-content {
-  flex: 1;
-  overflow: auto;
 }
 
 /* Button variants */
@@ -329,157 +482,18 @@ body {
   box-shadow: 0 0 0 2px var(--ring);
 }
 
-/* Loading states */
-.loading-spinner {
-  animation: spin 1s linear infinite;
-  height: 1rem;
-  width: 1rem;
-}
-
-.loading-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
+/* Simple animations */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .5;
-  }
-}
-
-/* Initialization and welcome animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes zoomIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.4s ease-out;
-}
-
-.animate-zoom-in {
-  animation: zoomIn 0.2s ease-out;
-}
-
-/* Loading screen specific styles */
-.loading-screen {
-  animation: fadeIn 0.2s ease-out;
-}
-
-.loading-screen-exit {
-  animation: fadeIn 0.3s ease-out reverse;
-}
-
-/* Welcome message animations */
-.welcome-overlay {
-  animation: fadeIn 0.3s ease-out;
-  backdrop-filter: blur(2px);
-}
-
-.welcome-content {
-  animation: slideUp 0.4s ease-out;
-}
-
-/* Focus visible improvements for better accessibility */
-.focus-visible:focus {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-
-/* Improved button hover states */
-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-button:active {
-  transform: translateY(0);
-}
-
-/* Smooth scrolling for better UX */
+/* Accessibility and UX improvements */
 html {
   scroll-behavior: smooth;
 }
 
-/* Better text selection */
 ::selection {
   background-color: var(--primary);
   color: var(--primary-foreground);
-}
-
-/* Loading state improvements */
-.loading-state {
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-/* Improved focus management */
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 6px;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  padding: 8px;
-  text-decoration: none;
-  border-radius: 4px;
-  z-index: 1000;
-}
-
-.skip-link:focus {
-  top: 6px;
-}
-
-/* Staggered animation for loading dots */
-.loading-dot-1 {
-  animation-delay: 0ms;
-}
-
-.loading-dot-2 {
-  animation-delay: 150ms;
-}
-
-.loading-dot-3 {
-  animation-delay: 300ms;
 }

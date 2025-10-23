@@ -40,12 +40,70 @@
 
 /* Helper panel specific styling */
 .left > .panel:first-child {
-
+ 
   margin: 0;
   border-bottom: 1px solid var(--panel-border);
   height: 120px;
   min-height: 120px;
   max-height: 120px;
+}
+
+/* DownMark-v3 style panel headers */
+.panel-header { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  padding: 8px 10px; 
+  border-bottom: 1px solid var(--panel-border); 
+  border-radius: 12px 12px 0 0; 
+  background: color-mix(in oklab, var(--background) 85%, var(--panel-background)); 
+}
+
+.panel-title { 
+  font-weight: 600; 
+  font-size: 13px; 
+  letter-spacing: .2px; 
+  color: var(--foreground);
+}
+
+.panel-actions { 
+  display: inline-flex; 
+  gap: 8px; 
+}
+
+.icon-btn { 
+  min-width: 32px; 
+  width: auto;
+  height: 32px; 
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 8px;
+  background: transparent; 
+  border: 1px solid var(--panel-border); 
+  border-radius: 10px; 
+  color: var(--muted-foreground); 
+  cursor: pointer; 
+  transition: background-color .15s ease, border-color .15s ease, color .15s ease; 
+}
+
+.icon-btn svg,
+.icon-btn > svg { 
+  width: 16px; 
+  height: 16px; 
+  flex-shrink: 0;
+}
+
+.icon-btn:hover { 
+  background: color-mix(in oklab, var(--panel-background) 70%, transparent); 
+  border-color: var(--primary); 
+  color: var(--foreground); 
+}
+
+.icon-btn:focus { 
+  outline: 2px solid var(--primary); 
+  outline-offset: 2px; 
 }
 
 :root {

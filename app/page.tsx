@@ -145,10 +145,6 @@ function MermaidUMLEditor() {
   return (
     <div className="h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
       <Header
-        onCopyCode={handleCopyCode}
-        onDownloadPNG={handleDownloadPNG}
-        onDownloadSVG={handleDownloadSVG}
-        onResetEditor={handleResetEditor}
         onThemeToggle={toggleTheme}
         currentTheme={theme}
       />
@@ -198,6 +194,8 @@ function MermaidUMLEditor() {
               theme={theme}
               onError={handleRenderError}
               onSuccess={handleRenderSuccess}
+              onDownloadPNG={handleDownloadPNG}
+              onDownloadSVG={handleDownloadSVG}
             />
           </div>
         </section>

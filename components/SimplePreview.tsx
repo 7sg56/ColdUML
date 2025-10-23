@@ -1,12 +1,15 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
+import { FiDownload } from 'react-icons/fi';
 
 interface SimplePreviewProps {
   content: string;
   theme: "light" | "dark";
   onError: (error: string) => void;
   onSuccess: () => void;
+  onDownloadPNG?: () => void;
+  onDownloadSVG?: () => void;
 }
 
 const DEFAULT_UML_CONTENT = `classDiagram
@@ -37,6 +40,8 @@ const SimplePreview = ({
   theme,
   onError,
   onSuccess,
+  onDownloadPNG,
+  onDownloadSVG,
 }: SimplePreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -225,11 +230,9 @@ const SimplePreview = ({
 
   return (
     <div className="h-full flex flex-col bg-panel-background">
-      <div className="flex items-center justify-between p-3 border-b border-panel-border bg-header-background">
-        <span className="text-sm font-medium text-muted-foreground">
-          Preview
-        </span>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <div className="panel-header">
+        <div className="panel-title">Preview</div>
+        <div className="panel-actions">
           {isRendering && (
             <svg
               className="animate-spin w-4 h-4"
@@ -251,7 +254,22 @@ const SimplePreview = ({
               ></path>
             </svg>
           )}
-          {theme === "dark" ? "🌙" : "☀️"}
+          {onDownloadPNG && (
+            <button className="icon-btn" title="Download PNG" aria-label="Download PNG" onClick={onDownloadPNG}>
+              <div className="flex items-center gap-1">
+                <FiDownload size={16} />
+                <span className="text-xs">PNG</span>
+              </div>
+            </button>
+          )}
+          {onDownloadSVG && (
+            <button className="icon-btn" title="Download SVG" aria-label="Download SVG" onClick={onDownloadSVG}>
+              <div className="flex items-center gap-1">
+                <FiDownload size={16} />
+                <span className="text-xs">SVG</span>
+              </div>
+            </button>
+          )}
         </div>
       </div>
       <div className="flex-1 relative min-h-0">

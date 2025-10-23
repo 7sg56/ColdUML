@@ -14,7 +14,7 @@ interface UMLTemplatesProps {
   onInsertTemplate: (template: string) => void;
 }
 
-// UML Diagram Types with Sample Code
+// UML Diagram Types - Strictly 5 Types Only
 const UML_TEMPLATES: UMLTemplate[] = [
   {
     id: 'class-diagram',
@@ -45,64 +45,52 @@ const UML_TEMPLATES: UMLTemplate[] = [
     Animal <|-- Cat`
   },
   {
+    id: 'use-case-diagram',
+    name: 'Use Case Diagram',
+    type: 'Use Case Diagram',
+    description: 'System functionality from user perspective',
+    code: `graph TD
+    User((User)) --> Login
+    User --> ViewProfile
+    User --> Logout
+    
+    Admin((Admin)) --> ManageUsers
+    Admin --> ViewReports
+    
+    Login --> ViewProfile
+    ManageUsers --> ViewReports`
+  },
+  {
     id: 'sequence-diagram',
     name: 'Sequence Diagram',
     type: 'Sequence Diagram',
     description: 'Interaction between objects over time',
     code: `sequenceDiagram
-    participant U as User
-    participant C as Client
-    participant S as Server
-    participant D as Database
+    participant User
+    participant System
+    participant Database
     
-    U->>C: Enter credentials
-    C->>S: POST /login
-    S->>D: Validate credentials
-    D-->>S: User data
-    S-->>C: JWT token
-    C-->>U: Login successful`
+    User->>System: Login request
+    System->>Database: Check credentials
+    Database-->>System: User data
+    System-->>User: Login successful
+    
+    User->>System: View profile
+    System->>Database: Get user info
+    Database-->>System: Profile data
+    System-->>User: Display profile`
   },
   {
-    id: 'flowchart',
-    name: 'Flowchart',
-    type: 'Flowchart',
-    description: 'Process flow and decision logic',
+    id: 'activity-diagram',
+    name: 'Activity Diagram',
+    type: 'Activity Diagram',
+    description: 'Business process flow and workflows',
     code: `flowchart TD
     A[Start] --> B{Decision}
     B -->|Yes| C[Process A]
     B -->|No| D[Process B]
     C --> E[End]
     D --> E`
-  },
-  {
-    id: 'state-diagram',
-    name: 'State Diagram',
-    type: 'State Diagram',
-    description: 'Object state transitions',
-    code: `stateDiagram-v2
-    [*] --> Idle
-    Idle --> Running : Start
-    Running --> Paused : Pause
-    Paused --> Running : Resume
-    Running --> [*] : Stop
-    Paused --> [*] : Stop`
-  },
-  {
-    id: 'gantt-chart',
-    name: 'Gantt Chart',
-    type: 'Gantt Chart',
-    description: 'Project timeline and milestones',
-    code: `gantt
-    title Project Timeline
-    dateFormat  YYYY-MM-DD
-    section Phase 1
-    Planning    :done, plan1, 2024-01-01, 2024-01-15
-    Design      :done, design1, 2024-01-16, 2024-01-30
-    section Phase 2
-    Development :active, dev1, 2024-02-01, 2024-03-15
-    Testing     :test1, 2024-03-16, 2024-03-30
-    section Phase 3
-    Deployment  :deploy1, 2024-04-01, 2024-04-15`
   },
 ];
 

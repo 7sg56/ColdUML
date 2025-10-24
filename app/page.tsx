@@ -53,8 +53,7 @@ function MermaidUMLEditor() {
   const [content, setContent] = useState(DEFAULT_UML_CONTENT);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => getInitialTheme());
   const [isThemeReady, setIsThemeReady] = useState(false);
-  // Simple error state (currently unused but kept for future use)
-  // const [error, setError] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Apply initial theme immediately
   useEffect(() => {
@@ -120,13 +119,15 @@ function MermaidUMLEditor() {
     }
   };
 
-  const handleRenderError = (errorMessage: string) => {
-    // Simple error handling - could be expanded later
-    console.warn('Render error:', errorMessage);
+  const handleRenderError = (error: string) => {
+    // Set error message for editor display
+    setErrorMessage(error);
+    console.warn('Render error:', error);
   };
 
   const handleRenderSuccess = () => {
-    // Simple success handling - could be expanded later
+    // Clear error message on successful render
+    setErrorMessage(null);
     console.log('Render success');
   };
 
@@ -178,6 +179,7 @@ function MermaidUMLEditor() {
               content={content}
               onChange={handleEditorContentChange}
               theme={theme}
+              errorMessage={errorMessage || undefined}
             />
           </section>
         </section>
@@ -196,6 +198,7 @@ function MermaidUMLEditor() {
               onSuccess={handleRenderSuccess}
               onDownloadPNG={handleDownloadPNG}
               onDownloadSVG={handleDownloadSVG}
+              hasError={!!errorMessage}
             />
           </div>
         </section>

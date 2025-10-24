@@ -442,6 +442,22 @@ body {
   top: -9999px !important;
 }
 
+/* Monaco Editor error styling */
+.monaco-editor .error-line {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+  border-left: 3px solid #ff4444 !important;
+}
+
+.monaco-editor .error-glyph {
+  background-color: #ff4444 !important;
+  color: white !important;
+}
+
+.monaco-editor .error-glyph::before {
+  content: "!" !important;
+  font-weight: bold !important;
+}
+
 /* Ensure proper scrolling in panels */
 .panel-scroll {
   overflow-y: auto;

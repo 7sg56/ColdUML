@@ -155,17 +155,19 @@ const SimplePreview = ({
         error instanceof Error ? error.message : "Failed to render diagram";
       onError(errorMessage);
 
-      // Show simple error message in container
+      // Show custom error message in container
       if (containerRef.current) {
         containerRef.current.innerHTML = `
           <div class="flex items-center justify-center h-full p-6">
-            <div class="text-center text-red-600">
-              <svg class="w-12 h-12 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-              </svg>
-              <p class="text-sm font-medium">Diagram Error</p>
-              <p class="text-xs mt-1 text-gray-600">${errorMessage}</p>
-              <p class="text-xs mt-2 text-gray-500">Check your Mermaid syntax and try again.</p>
+            <div class="text-center text-foreground">
+              <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                <svg class="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+              <h2 class="text-xl font-bold mb-2 text-foreground">Syntax error in text</h2>
+              <p class="text-sm text-muted-foreground mb-2">mermaid version 10.9.4</p>
+              <p class="text-xs text-muted-foreground">${errorMessage}</p>
             </div>
           </div>
         `;

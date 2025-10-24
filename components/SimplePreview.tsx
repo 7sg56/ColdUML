@@ -318,9 +318,9 @@ const SimplePreview = ({
         {/* Error state overlay */}
         {hasError && content.trim() && (
           <div className="absolute inset-0 flex items-center justify-center bg-preview-background z-20">
-            <div className="text-center text-muted-foreground">
+            <div className="text-center">
               <svg
-                className="w-16 h-16 mx-auto mb-4 opacity-50"
+                className="w-16 h-16 mx-auto mb-4 text-red-500"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -332,8 +332,8 @@ const SimplePreview = ({
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                 ></path>
               </svg>
-              <p className="text-sm">Syntax error in diagram</p>
-              <p className="text-xs opacity-75 mt-1">Check your Mermaid syntax</p>
+              <p className="text-sm text-red-600 font-medium">Syntax error in diagram</p>
+              <p className="text-xs text-red-500 mt-1">Check your Mermaid syntax</p>
             </div>
           </div>
         )}

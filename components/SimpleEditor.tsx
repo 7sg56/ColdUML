@@ -8,6 +8,7 @@ interface SimpleEditorProps {
   content: string;
   onChange: (content: string) => void;
   theme?: 'light' | 'dark';
+  errorMessage?: string;
 }
 
 export interface SimpleEditorRef {
@@ -18,7 +19,8 @@ export interface SimpleEditorRef {
 const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({ 
   content, 
   onChange, 
-  theme = 'light'
+  theme = 'light',
+  errorMessage
 }, ref) => {
   const editorRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -201,6 +203,43 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       }
     }
   }, [theme]);
+
+  // Handle error messages
+  useEffect(() => {
+    if (editorRef.current && errorMessage) {
+      const editor = editorRef.current;
+      const model = editor.getModel();
+      
+      if (model) {
+        // Clear existing markers
+        editor.deltaDecorations(editor.getModel()?.getAllDecorations().map((d: any) => d.id) || [], []);
+        
+        // Add error marker to the entire content
+        const fullRange = {
+          startLineNumber: 1,
+          startColumn: 1,
+          endLineNumber: model.getLineCount(),
+          endColumn: model.getLineMaxColumn(model.getLineCount())
+        };
+        
+        editor.deltaDecorations([], [{
+          range: fullRange,
+          options: {
+            className: 'error-line',
+            glyphMarginClassName: 'error-glyph',
+            hoverMessage: { value: errorMessage }
+          }
+        }]);
+      }
+    } else if (editorRef.current && !errorMessage) {
+      // Clear error markers when no error
+      const editor = editorRef.current;
+      const model = editor.getModel();
+      if (model) {
+        editor.deltaDecorations(editor.getModel()?.getAllDecorations().map((d: any) => d.id) || [], []);
+      }
+    }
+  }, [errorMessage]);
 
   return (
     <div className="h-full flex flex-col bg-panel-background">

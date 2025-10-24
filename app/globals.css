@@ -319,6 +319,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden; /* Disable body scroll */
+  height: 100vh; /* Full viewport height */
 }
 
 /* Mermaid diagram styling with reliable fonts */
@@ -369,9 +371,137 @@ body {
   max-width: 100% !important;
 }
 
+/* Completely hide Mermaid error messages */
+.mermaid .error-icon,
+.mermaid .error-text,
+.mermaid .error-message,
+.mermaid [class*="error"],
+.mermaid [id*="error"],
+.mermaid .mermaid-error,
+.mermaid .syntax-error,
+.mermaid .parse-error {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide any Mermaid error containers */
+.mermaid div[class*="error"],
+.mermaid div[id*="error"],
+.mermaid .error-container,
+.mermaid .mermaid-error-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide Mermaid error SVGs and graphics */
+.mermaid svg[class*="error"],
+.mermaid svg[id*="error"],
+.mermaid .error-svg,
+.mermaid .bomb-icon,
+.mermaid .error-icon-svg {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Global rule to hide any Mermaid error elements */
+[data-testid="mermaid-preview-container"] .mermaid [class*="error"],
+[data-testid="mermaid-preview-container"] .mermaid [id*="error"],
+[data-testid="mermaid-preview-container"] .mermaid .error-icon,
+[data-testid="mermaid-preview-container"] .mermaid .error-text,
+[data-testid="mermaid-preview-container"] .mermaid .error-message,
+[data-testid="mermaid-preview-container"] .mermaid .mermaid-error,
+[data-testid="mermaid-preview-container"] .mermaid .syntax-error,
+[data-testid="mermaid-preview-container"] .mermaid .parse-error,
+[data-testid="mermaid-preview-container"] .mermaid div[class*="error"],
+[data-testid="mermaid-preview-container"] .mermaid div[id*="error"],
+[data-testid="mermaid-preview-container"] .mermaid .error-container,
+[data-testid="mermaid-preview-container"] .mermaid .mermaid-error-container,
+[data-testid="mermaid-preview-container"] .mermaid svg[class*="error"],
+[data-testid="mermaid-preview-container"] .mermaid svg[id*="error"],
+[data-testid="mermaid-preview-container"] .mermaid .error-svg,
+[data-testid="mermaid-preview-container"] .mermaid .bomb-icon,
+[data-testid="mermaid-preview-container"] .mermaid .error-icon-svg {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+}
+
+/* Monaco Editor error styling */
+.monaco-editor .error-line {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+  border-left: 3px solid #ff4444 !important;
+}
+
+.monaco-editor .error-glyph {
+  background-color: #ff4444 !important;
+  color: white !important;
+}
+
+.monaco-editor .error-glyph::before {
+  content: "!" !important;
+  font-weight: bold !important;
+}
+
 /* Ensure proper scrolling in panels */
 .panel-scroll {
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Main app container - full height, no scroll */
+#__next {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Root container - full height, no scroll */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+/* Main layout - full height, no scroll */
+main {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Editor and preview panels - internal scroll only */
+.monaco-editor-wrapper {
+  height: 100%;
+  overflow: hidden;
+}
+
+.monaco-editor {
+  height: 100% !important;
+}
+
+/* Preview container - internal scroll only */
+[data-testid="mermaid-preview-container"] {
+  height: 100%;
+  overflow: auto;
   overflow-x: hidden;
 }
 

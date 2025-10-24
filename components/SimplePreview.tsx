@@ -10,6 +10,7 @@ interface SimplePreviewProps {
   onSuccess: () => void;
   onDownloadPNG?: () => void;
   onDownloadSVG?: () => void;
+  hasError?: boolean;
 }
 
 const DEFAULT_UML_CONTENT = `classDiagram
@@ -42,6 +43,7 @@ const SimplePreview = ({
   onSuccess,
   onDownloadPNG,
   onDownloadSVG,
+  hasError = false,
 }: SimplePreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -76,8 +78,10 @@ const SimplePreview = ({
           }
         }
       } catch (error) {
+        // Suppress initialization errors completely
         if (isMounted) {
-          onError("Failed to initialize diagram renderer");
+          // Silently fail - don't call onError
+          console.warn("Mermaid initialization failed, but continuing silently");
         }
       }
     };
@@ -114,8 +118,13 @@ const SimplePreview = ({
       return;
     }
 
-    const diagramContent = content.trim() || DEFAULT_UML_CONTENT;
+    // If content is empty, clear the container and show empty state
+    if (!content.trim()) {
+      containerRef.current.innerHTML = "";
+      return;
+    }
 
+    const diagramContent = content.trim();
     setIsRendering(true);
 
     try {
@@ -128,15 +137,24 @@ const SimplePreview = ({
       // Generate unique ID for this render
       const diagramId = `mermaid-diagram-${Date.now()}`;
 
-      // Render the diagram
-      const renderResult = await mermaid.default.render(
-        diagramId,
-        diagramContent
-      );
+      // Try to render the user's content first
+      let renderResult;
+      try {
+        renderResult = await mermaid.default.render(
+          diagramId,
+          diagramContent
+        );
+        onSuccess();
+      } catch (renderError) {
+        // Report the error to the parent component for editor error handling
+        const errorMessage = renderError instanceof Error ? renderError.message : "Syntax error in diagram";
+        onError(errorMessage);
+        return;
+      }
 
       if (renderResult && renderResult.svg && containerRef.current) {
         containerRef.current.innerHTML = renderResult.svg;
-
+        
         // Apply basic styling
         const svgElement = containerRef.current.querySelector("svg");
         if (svgElement) {
@@ -145,29 +163,29 @@ const SimplePreview = ({
           svgElement.style.display = "block";
           svgElement.style.margin = "0 auto";
         }
-
-        onSuccess();
       } else {
-        throw new Error("Mermaid render returned empty result");
+        // If everything fails, show a simple placeholder
+        containerRef.current.innerHTML = `
+          <div class="flex items-center justify-center h-full p-6">
+            <div class="text-center text-muted-foreground">
+              <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <p class="text-sm">Diagram preview</p>
+            </div>
+          </div>
+        `;
       }
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Failed to render diagram";
-      onError(errorMessage);
-
-      // Show custom error message in container
+      // If everything fails, show a simple placeholder
       if (containerRef.current) {
         containerRef.current.innerHTML = `
           <div class="flex items-center justify-center h-full p-6">
-            <div class="text-center text-foreground">
-              <div class="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                <svg class="w-16 h-16 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                </svg>
-              </div>
-              <h2 class="text-xl font-bold mb-2 text-foreground">Syntax error in text</h2>
-              <p class="text-sm text-muted-foreground mb-2">mermaid version 10.9.4</p>
-              <p class="text-xs text-muted-foreground">${errorMessage}</p>
+            <div class="text-center text-muted-foreground">
+              <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              <p class="text-sm">Diagram preview</p>
             </div>
           </div>
         `;
@@ -175,7 +193,7 @@ const SimplePreview = ({
     } finally {
       setIsRendering(false);
     }
-  }, [content, isInitialized, onError, onSuccess]);
+  }, [content, isInitialized, onSuccess]);
 
   // Render diagram with simple debounced rendering (300ms delay)
   useEffect(() => {
@@ -183,7 +201,13 @@ const SimplePreview = ({
       return;
     }
 
-    // Simple debounce for content changes - no complex performance monitoring
+    // If content is empty, clear immediately without debounce
+    if (!content.trim()) {
+      containerRef.current.innerHTML = "";
+      return;
+    }
+
+    // Simple debounce for content changes
     const debounceTimer = setTimeout(async () => {
       await renderDiagram();
     }, 300);
@@ -194,41 +218,6 @@ const SimplePreview = ({
     };
   }, [content, isInitialized, renderDiagram]);
 
-  // Show empty state when no content
-  if (!content.trim()) {
-    return (
-      <div className="h-full flex flex-col bg-panel-background">
-        <div className="flex items-center justify-between p-3 border-b border-panel-border bg-header-background">
-          <span className="text-sm font-medium text-muted-foreground">
-            Preview
-          </span>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {theme === "dark" ? "🌙" : "☀️"}
-          </div>
-        </div>
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="text-center text-muted-foreground">
-            <svg
-              className="w-16 h-16 mx-auto mb-4 opacity-50"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-              ></path>
-            </svg>
-            <p className="text-sm">
-              Start typing Mermaid syntax to see your diagram
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-panel-background">
@@ -256,7 +245,7 @@ const SimplePreview = ({
               ></path>
             </svg>
           )}
-          {onDownloadPNG && (
+          {onDownloadPNG && !hasError && (
             <button className="icon-btn" title="Download PNG" aria-label="Download PNG" onClick={onDownloadPNG}>
               <div className="flex items-center gap-1">
                 <FiDownload size={16} />
@@ -264,7 +253,7 @@ const SimplePreview = ({
               </div>
             </button>
           )}
-          {onDownloadSVG && (
+          {onDownloadSVG && !hasError && (
             <button className="icon-btn" title="Download SVG" aria-label="Download SVG" onClick={onDownloadSVG}>
               <div className="flex items-center gap-1">
                 <FiDownload size={16} />
@@ -300,6 +289,51 @@ const SimplePreview = ({
               <p className="text-sm text-muted-foreground">
                 Rendering diagram...
               </p>
+            </div>
+          </div>
+        )}
+        {/* Empty state overlay */}
+        {!content.trim() && (
+          <div className="absolute inset-0 flex items-center justify-center bg-preview-background z-20">
+            <div className="text-center text-muted-foreground">
+              <svg
+                className="w-16 h-16 mx-auto mb-4 opacity-50"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                ></path>
+              </svg>
+              <p className="text-sm">
+                Start typing Mermaid syntax to see your diagram
+              </p>
+            </div>
+          </div>
+        )}
+        {/* Error state overlay */}
+        {hasError && content.trim() && (
+          <div className="absolute inset-0 flex items-center justify-center bg-preview-background z-20">
+            <div className="text-center">
+              <svg
+                className="w-16 h-16 mx-auto mb-4 text-red-500"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                ></path>
+              </svg>
+              <p className="text-sm text-red-600 font-medium">Syntax error in diagram</p>
+              <p className="text-xs text-red-500 mt-1">Check your Mermaid syntax</p>
             </div>
           </div>
         )}

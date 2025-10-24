@@ -58,7 +58,7 @@ function MermaidUMLEditor() {
   // Apply initial theme immediately
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.className = theme;
       setIsThemeReady(true);
     }
   }, [theme]);
@@ -66,15 +66,10 @@ function MermaidUMLEditor() {
   // Apply theme changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.className = theme;
       localStorage.setItem('theme', theme);
     }
   }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
-
 
   const handleCopyCode = async () => {
     const result = await copyMermaidCode(content);
@@ -144,11 +139,8 @@ function MermaidUMLEditor() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground font-sans overflow-hidden">
-      <Header
-        onThemeToggle={toggleTheme}
-        currentTheme={theme}
-      />
+    <div className="h-screen flex flex-col overflow-hidden">
+      <Header theme={theme} onThemeChange={setTheme} />
 
       {/* Main content area - Full width layout with center divider */}
       <main

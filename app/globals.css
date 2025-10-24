@@ -1,5 +1,160 @@
 @import "tailwindcss";
 
+/* Default dark theme - Lighter Vercel Dark */
+:root {
+  --bg: #0a0a0a;
+  --fg: #ffffff;
+  --accent: #0070f3;
+  --muted: #888888;
+  --surface: #1a1a1a;
+  --border: #2a2a2a;
+  --panel-border: #2a2a2a;
+  --header-h: 56px;
+}
+
+/* Light theme variables - Vercel Light */
+html.light {
+  --bg: #ffffff;
+  --fg: #000000;
+  --accent: #0070f3;
+  --muted: #666666;
+  --surface: #fafafa;
+  --border: #eaeaea;
+  --panel-border: #eaeaea;
+}
+
+/* Dark theme variables - Lighter Vercel Dark */
+html.dark {
+  --bg: #0a0a0a;
+  --fg: #ffffff;
+  --accent: #0070f3;
+  --muted: #888888;
+  --surface: #1a1a1a;
+  --border: #2a2a2a;
+  --panel-border: #2a2a2a;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  /* Smooth transitions for theme variables */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  overflow: hidden; /* lock page scroll */
+  /* Smooth transitions for background and text */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  min-height: var(--header-h);
+  transition: border-color 0.3s ease;
+}
+.brand { display: inline-flex; align-items: center; }
+.brand-text {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, var(--accent) 0%, #0070f3 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 0 20px rgba(0, 112, 243, 0.3);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover:not(:disabled) {
+  background: var(--bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.theme-toggle.loading {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Spin animation for loading spinner */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.github-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.github-btn:hover {
+  background: var(--bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.github-btn:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .left, .right { 
   height: 100%; 
   min-height: 0; 
@@ -9,10 +164,10 @@
 
 .left { 
   border-right: 1px solid var(--panel-border); 
-  padding: 0; 
+  padding: 16px; 
   display: flex; 
   flex-direction: column; 
-  gap: 0; 
+  gap: 12px; 
 }
 
 .left > .panel { 
@@ -26,7 +181,7 @@
 }
 
 .right { 
-  padding: 0; 
+  padding: 16px; 
   display: flex; 
   margin: 0;
 }
@@ -37,17 +192,18 @@
   margin: 0;
 }
 
-/* Helper panel specific styling */
-.left > .panel:first-child {
- 
-  margin: 0;
-  border-bottom: 1px solid var(--panel-border);
-  height: 120px;
-  min-height: 120px;
-  max-height: 120px;
+/* Panel shell with header actions */
+.panel { 
+  border: 1px solid var(--panel-border); 
+  border-radius: 12px; 
+  background: var(--surface); 
+  display: flex; 
+  flex-direction: column; 
+  min-height: 0; 
+  overflow: hidden;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
 }
-
-/* DownMark-v3 style panel headers */
+.panel.grow { flex: 1 1 auto; min-height: 0; }
 .panel-header { 
   display: flex; 
   align-items: center; 
@@ -55,8 +211,69 @@
   padding: 8px 10px; 
   border-bottom: 1px solid var(--panel-border); 
   border-radius: 12px 12px 0 0; 
-  background: color-mix(in oklab, var(--background) 85%, var(--panel-background)); 
+  background: color-mix(in oklab, var(--bg) 85%, var(--surface)); 
 }
+
+/* Consistent colored panel headers */
+.panel-header.editor-header,
+.panel-header.preview-header,
+.panel-header.templates-header {
+  background: linear-gradient(135deg, color-mix(in oklab, var(--accent) 15%, var(--surface)) 0%, color-mix(in oklab, var(--accent) 8%, var(--surface)) 100%);
+  border-bottom: 1px solid color-mix(in oklab, var(--accent) 25%, var(--panel-border));
+}
+.panel-title { 
+  font-weight: 600; 
+  font-size: 13px; 
+  letter-spacing: .2px; 
+}
+.panel-actions { 
+  display: inline-flex; 
+  gap: 6px; 
+  align-items: center;
+}
+.icon-btn { 
+  min-width: 28px; 
+  height: 28px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  padding: 0 8px;
+  background: color-mix(in oklab, var(--surface) 60%, transparent); 
+  border: 1px solid color-mix(in oklab, var(--panel-border) 80%, transparent); 
+  border-radius: 6px; 
+  color: var(--muted); 
+  cursor: pointer; 
+  transition: all .15s ease; 
+  font-size: 12px;
+  font-weight: 500;
+}
+.icon-btn svg { 
+  width: 14px; 
+  height: 14px; 
+  flex-shrink: 0;
+}
+.icon-btn:hover { 
+  background: color-mix(in oklab, var(--accent) 20%, var(--surface)); 
+  border-color: var(--accent); 
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+.icon-btn:focus { 
+  outline: 2px solid var(--accent); 
+  outline-offset: 2px; 
+}
+.panel-body { 
+  padding: 10px; 
+  flex: 1 1 auto; 
+  min-height: 0; 
+  display: flex; 
+  flex-direction: column; 
+}
+
+/* Ensure editor internals consume full height */
+.editor-body { display: flex; flex: 1 1 auto; min-height: 0; }
+.panel-body .editor-wrap { flex: 1 1 auto; min-height: 0; }
+.panel-body .preview { flex: 1 1 auto; min-height: 0; }
 
 /* Editor scrolling fix for all screen sizes */
 .monaco-editor {
@@ -137,190 +354,132 @@
   overflow: auto !important;
 }
 
-.panel-title { 
-  font-weight: 600; 
-  font-size: 13px; 
-  letter-spacing: .2px; 
-  color: var(--foreground);
+/* Monaco Editor Styles */
+.monaco-editor-container {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  border-radius: 0 8px 8px 0;
+  overflow: hidden;
 }
 
-.panel-actions { 
-  display: inline-flex; 
-  gap: 8px; 
-}
-
-.icon-btn { 
-  min-width: 32px; 
-  width: auto;
-  height: 32px; 
+.monaco-loading {
   display: flex; 
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 0 8px;
-  background: transparent; 
-  border: 1px solid var(--panel-border); 
-  border-radius: 10px; 
-  color: var(--muted-foreground); 
-  cursor: pointer; 
-  transition: background-color .15s ease, border-color .15s ease, color .15s ease; 
+  height: 100%;
+  background: var(--surface);
+  border-radius: 0 8px 8px 0;
 }
 
-.icon-btn svg,
-.icon-btn > svg { 
-  width: 16px; 
-  height: 16px; 
-  flex-shrink: 0;
+.loading-text {
+  color: var(--muted);
+  font-size: 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-.icon-btn:hover { 
-  background: color-mix(in oklab, var(--panel-background) 70%, transparent); 
-  border-color: var(--primary); 
-  color: var(--foreground); 
+.monaco-editor-wrapper {
+  width: 100%;
+  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
-.icon-btn:focus { 
-  outline: 2px solid var(--primary); 
-  outline-offset: 2px; 
+/* Monaco Editor theme overrides */
+.monaco-editor-container .monaco-editor {
+  border-radius: 0 8px 8px 0;
 }
 
-:root {
-  /* Light theme colors - Downmark design system */
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f8fafc;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #2563eb;
-  --panel-background: #ffffff;
-  --panel-border: #e2e8f0;
-  --header-background: #ffffff;
-  --header-border: #e2e8f0;
-  --button-background: #f8fafc;
-  --button-hover: #f1f5f9;
-  --editor-background: #ffffff;
-  --preview-background: #ffffff;
+.monaco-editor-container .monaco-editor .view-lines {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-panel-background: var(--panel-background);
-  --color-panel-border: var(--panel-border);
-  --color-header-background: var(--header-background);
-  --color-header-border: var(--header-border);
-  --color-button-background: var(--button-background);
-  --color-button-hover: var(--button-hover);
-  --color-editor-background: var(--editor-background);
-  --color-preview-background: var(--preview-background);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Monaco Editor line numbers spacing */
+.monaco-editor-container .monaco-editor .margin {
+  display: none !important;
+  width: 0 !important;
 }
 
-/* Dark theme - applied via data-theme attribute */
-[data-theme="dark"] {
-  /* Dark theme colors - Downmark design system */
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --secondary: #1e293b;
-  --secondary-foreground: #f8fafc;
-  --muted: #0f172a;
-  --muted-foreground: #94a3b8;
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-  --border: #334155;
-  --input: #334155;
-  --ring: #3b82f6;
-  --panel-background: #0f172a;
-  --panel-border: #334155;
-  --header-background: #0f172a;
-  --header-border: #334155;
-  --button-background: #1e293b;
-  --button-hover: #334155;
-  --editor-background: #0f172a;
-  --preview-background: #0f172a;
+.monaco-editor-container .monaco-editor .margin-view-overlays {
+  display: none !important;
+  width: 0 !important;
 }
 
-/* Dark theme - applied via system preference */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    /* Dark theme colors - Downmark design system */
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary: #3b82f6;
-    --primary-foreground: #ffffff;
-    --secondary: #1e293b;
-    --secondary-foreground: #f8fafc;
-    --muted: #0f172a;
-    --muted-foreground: #94a3b8;
-    --accent: #1e293b;
-    --accent-foreground: #f8fafc;
-    --border: #334155;
-    --input: #334155;
-    --ring: #3b82f6;
-    --panel-background: #0f172a;
-    --panel-border: #334155;
-    --header-background: #0f172a;
-    --header-border: #334155;
-    --button-background: #1e293b;
-    --button-hover: #334155;
-    --editor-background: #0f172a;
-    --preview-background: #0f172a;
-  }
+.monaco-editor-container .monaco-editor .line-numbers {
+  color: var(--muted) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 14px !important;
+  line-height: 24px !important;
+  padding-right: 16px !important;
+  text-align: right !important;
+  width: 60px !important;
 }
 
-/* Ensure light theme is applied when explicitly set */
-[data-theme="light"] {
-  /* Light theme colors - Downmark design system */
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f8fafc;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #2563eb;
-  --panel-background: #ffffff;
-  --panel-border: #e2e8f0;
-  --header-background: #ffffff;
-  --header-border: #e2e8f0;
-  --button-background: #f8fafc;
-  --button-hover: #f1f5f9;
-  --editor-background: #ffffff;
-  --preview-background: #ffffff;
+/* Monaco Editor content area spacing */
+.monaco-editor-container .monaco-editor .view-lines {
+  padding-left: 10px !important;
+  padding-right: 16px !important;
+  margin-left: 0 !important;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-  overflow: hidden; /* Disable body scroll */
-  height: 100vh; /* Full viewport height */
+.monaco-editor-container .monaco-editor .view-line {
+  padding-left: 0 !important;
+}
+
+/* Ensure proper spacing between line numbers and content */
+.monaco-editor-container .monaco-editor .lines-content {
+  margin-left: 0 !important;
+}
+
+/* Additional spacing fixes */
+.monaco-editor-container .monaco-editor .overflow-guard {
+  overflow: hidden !important;
+}
+
+.monaco-editor-container .monaco-editor .monaco-editor-background {
+  background: var(--surface) !important;
+}
+
+/* Force proper line number area width */
+.monaco-editor-container .monaco-editor .margin-view-overlays .line-numbers {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+}
+
+/* Content area positioning */
+.monaco-editor-container .monaco-editor .view-overlays {
+  left: 0 !important;
+}
+
+/* Custom Monaco theme for dark mode - Lighter Vercel Dark */
+.monaco-editor-container .monaco-editor.vs-dark {
+  --vscode-editor-background: #1a1a1a;
+  --vscode-editor-foreground: #ffffff;
+  --vscode-editorLineNumber-foreground: #888888;
+  --vscode-editorLineNumber-activeForeground: #ffffff;
+  --vscode-editor-selectionBackground: rgba(0, 112, 243, 0.3);
+  --vscode-editor-selectionHighlightBackground: rgba(0, 112, 243, 0.1);
+  --vscode-editorCursor-foreground: #ffffff;
+  --vscode-editorWhitespace-foreground: #888888;
+  --vscode-editorIndentGuide-background: #2a2a2a;
+  --vscode-editorIndentGuide-activeBackground: #888888;
+}
+
+/* Custom Monaco theme for light mode - Vercel Light */
+.monaco-editor-container .monaco-editor.vs {
+  --vscode-editor-background: #ffffff;
+  --vscode-editor-foreground: #000000;
+  --vscode-editorLineNumber-foreground: #666666;
+  --vscode-editorLineNumber-activeForeground: #000000;
+  --vscode-editor-selectionBackground: rgba(0, 112, 243, 0.3);
+  --vscode-editor-selectionHighlightBackground: rgba(0, 112, 243, 0.1);
+  --vscode-editorCursor-foreground: #000000;
+  --vscode-editorWhitespace-foreground: #666666;
+  --vscode-editorIndentGuide-background: #eaeaea;
+  --vscode-editorIndentGuide-activeBackground: #666666;
 }
 
 /* Mermaid diagram styling with reliable fonts */
@@ -342,27 +501,65 @@ body {
   fill: currentColor !important;
 }
 
-/* Ensure proper text rendering in dark mode */
-[data-theme="dark"] .mermaid text,
-[data-theme="dark"] .mermaid tspan {
-  fill: #f8fafc !important;
+/* Ensure proper text rendering in dark mode - Vercel Dark */
+html.dark .mermaid text,
+html.dark .mermaid tspan {
+  fill: #ffffff !important;
 }
 
-/* Ensure proper text rendering in light mode */
-[data-theme="light"] .mermaid text,
-[data-theme="light"] .mermaid tspan {
-  fill: #0f172a !important;
+/* Ensure proper text rendering in light mode - GitHub Light */
+html.light .mermaid text,
+html.light .mermaid tspan {
+  fill: #24292e !important;
+}
+
+/* Fix for class diagram boxes - theme aware */
+html.dark .mermaid .classBox {
+  fill: #1a1a1a !important;
+  stroke: #2a2a2a !important;
+}
+
+html.light .mermaid .classBox {
+  fill: #f6f8fa !important;
+  stroke: #d0d7de !important;
+}
+
+/* Fix for relationship lines - theme aware */
+html.dark .mermaid .relation {
+  stroke: #888888 !important;
+}
+
+html.light .mermaid .relation {
+  stroke: #6a737d !important;
+}
+
+/* Fix for all mermaid elements in light mode */
+html.light .mermaid .node rect,
+html.light .mermaid .node circle,
+html.light .mermaid .node ellipse,
+html.light .mermaid .node polygon {
+  fill: #f6f8fa !important;
+  stroke: #d0d7de !important;
+}
+
+html.light .mermaid .edgePath .path {
+  stroke: #6a737d !important;
+}
+
+html.light .mermaid .edgeLabel {
+  background-color: #f6f8fa !important;
+  color: #24292e !important;
 }
 
 /* Fix for class diagram boxes */
 .mermaid .classBox {
-  fill: var(--muted) !important;
+  fill: var(--surface) !important;
   stroke: var(--border) !important;
 }
 
 /* Fix for relationship lines */
 .mermaid .relation {
-  stroke: var(--muted-foreground) !important;
+  stroke: var(--muted) !important;
 }
 
 /* Ensure diagrams are responsive */
@@ -370,6 +567,35 @@ body {
   width: 100% !important;
   max-width: 100% !important;
 }
+
+.preview { 
+  height: 100%; 
+  width: 100%; 
+  flex: 1 1 auto; 
+  min-width: 0; 
+  border: none; 
+  border-radius: 8px; 
+  padding: 16px; 
+  overflow: auto; 
+  background: var(--surface); 
+}
+.preview img { max-width: 100%; height: auto; }
+
+.toast { 
+  position: fixed; 
+  left: 50%; 
+  bottom: 20px; 
+  transform: translateX(-50%); 
+  background: var(--fg); 
+  color: var(--bg); 
+  padding: 8px 12px; 
+  border-radius: 999px; 
+  font-size: 12px; 
+  opacity: 0; 
+  pointer-events: none; 
+  transition: opacity .2s ease; 
+}
+.toast.show { opacity: 1; }
 
 /* Completely hide Mermaid error messages */
 .mermaid .error-icon,
@@ -810,4 +1036,17 @@ html {
 ::selection {
   background-color: var(--primary);
   color: var(--primary-foreground);
+}
+
+/* UML Template Button Animations */
+.transform {
+  transition: transform 0.2s ease-in-out;
+}
+
+.scale-102 {
+  transform: scale(1.02);
+}
+
+.scale-105 {
+  transform: scale(1.05);
 }

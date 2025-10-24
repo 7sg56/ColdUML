@@ -102,14 +102,14 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       }
     });
 
-    // Define simple themes
+    // Define Vercel themes
     monaco.editor.defineTheme('mermaid-light', {
       base: 'vs',
       inherit: true,
       rules: [
         { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
         { token: 'keyword', foreground: 'd73a49', fontStyle: 'bold' },
-        { token: 'operator', foreground: '005cc5' },
+        { token: 'operator', foreground: '24292e' },
         { token: 'identifier', foreground: '24292e' },
         { token: 'string', foreground: '032f62' },
         { token: 'number', foreground: '005cc5' },
@@ -118,7 +118,15 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       ],
       colors: {
         'editor.background': '#ffffff',
-        'editor.foreground': '#24292e'
+        'editor.foreground': '#24292e',
+        'editorLineNumber.foreground': '#6a737d',
+        'editorLineNumber.activeForeground': '#24292e',
+        'editor.selectionBackground': 'rgba(3, 102, 214, 0.2)',
+        'editor.selectionHighlightBackground': 'rgba(3, 102, 214, 0.1)',
+        'editorCursor.foreground': '#24292e',
+        'editorWhitespace.foreground': '#d0d7de',
+        'editorIndentGuide.background': '#d0d7de',
+        'editorIndentGuide.activeBackground': '#6a737d'
       }
     });
 
@@ -126,18 +134,26 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
-        { token: 'keyword', foreground: 'ff7b72', fontStyle: 'bold' },
-        { token: 'operator', foreground: '79c0ff' },
-        { token: 'identifier', foreground: 'f0f6fc' },
-        { token: 'string', foreground: 'a5d6ff' },
-        { token: 'number', foreground: '79c0ff' },
-        { token: 'bracket', foreground: 'f0f6fc' },
-        { token: 'delimiter', foreground: 'f0f6fc' }
+        { token: 'comment', foreground: '666666', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '0070f3', fontStyle: 'bold' },
+        { token: 'operator', foreground: '0070f3' },
+        { token: 'identifier', foreground: 'ffffff' },
+        { token: 'string', foreground: '0070f3' },
+        { token: 'number', foreground: '0070f3' },
+        { token: 'bracket', foreground: 'ffffff' },
+        { token: 'delimiter', foreground: 'ffffff' }
       ],
       colors: {
-        'editor.background': '#0d1117',
-        'editor.foreground': '#f0f6fc'
+        'editor.background': '#1a1a1a',
+        'editor.foreground': '#ffffff',
+        'editorLineNumber.foreground': '#888888',
+        'editorLineNumber.activeForeground': '#ffffff',
+        'editor.selectionBackground': 'rgba(0, 112, 243, 0.3)',
+        'editor.selectionHighlightBackground': 'rgba(0, 112, 243, 0.1)',
+        'editorCursor.foreground': '#ffffff',
+        'editorWhitespace.foreground': '#888888',
+        'editorIndentGuide.background': '#2a2a2a',
+        'editorIndentGuide.activeBackground': '#888888'
       }
     });
 
@@ -199,6 +215,63 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     if (editorRef.current && typeof window !== 'undefined') {
       const monaco = (window as any).monaco; // eslint-disable-line @typescript-eslint/no-explicit-any
       if (monaco && monaco.editor) {
+        // Ensure themes are defined before setting
+        if (theme === 'dark') {
+          monaco.editor.defineTheme('mermaid-dark', {
+            base: 'vs-dark',
+            inherit: true,
+            rules: [
+              { token: 'comment', foreground: '666666', fontStyle: 'italic' },
+              { token: 'keyword', foreground: '0070f3', fontStyle: 'bold' },
+              { token: 'operator', foreground: '0070f3' },
+              { token: 'identifier', foreground: 'ffffff' },
+              { token: 'string', foreground: '0070f3' },
+              { token: 'number', foreground: '0070f3' },
+              { token: 'bracket', foreground: 'ffffff' },
+              { token: 'delimiter', foreground: 'ffffff' }
+            ],
+            colors: {
+              'editor.background': '#1a1a1a',
+              'editor.foreground': '#ffffff',
+              'editorLineNumber.foreground': '#888888',
+              'editorLineNumber.activeForeground': '#ffffff',
+              'editor.selectionBackground': 'rgba(0, 112, 243, 0.3)',
+              'editor.selectionHighlightBackground': 'rgba(0, 112, 243, 0.1)',
+              'editorCursor.foreground': '#ffffff',
+              'editorWhitespace.foreground': '#888888',
+              'editorIndentGuide.background': '#2a2a2a',
+              'editorIndentGuide.activeBackground': '#888888'
+            }
+          });
+        } else {
+          monaco.editor.defineTheme('mermaid-light', {
+            base: 'vs',
+            inherit: true,
+            rules: [
+              { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
+              { token: 'keyword', foreground: 'd73a49', fontStyle: 'bold' },
+              { token: 'operator', foreground: '24292e' },
+              { token: 'identifier', foreground: '24292e' },
+              { token: 'string', foreground: '032f62' },
+              { token: 'number', foreground: '005cc5' },
+              { token: 'bracket', foreground: '24292e' },
+              { token: 'delimiter', foreground: '24292e' }
+            ],
+            colors: {
+              'editor.background': '#ffffff',
+              'editor.foreground': '#24292e',
+              'editorLineNumber.foreground': '#6a737d',
+              'editorLineNumber.activeForeground': '#24292e',
+              'editor.selectionBackground': 'rgba(3, 102, 214, 0.2)',
+              'editor.selectionHighlightBackground': 'rgba(3, 102, 214, 0.1)',
+              'editorCursor.foreground': '#24292e',
+              'editorWhitespace.foreground': '#d0d7de',
+              'editorIndentGuide.background': '#d0d7de',
+              'editorIndentGuide.activeBackground': '#6a737d'
+            }
+          });
+        }
+        
         monaco.editor.setTheme(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
       }
     }
@@ -242,8 +315,8 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
   }, [errorMessage]);
 
   return (
-    <div className="h-full flex flex-col bg-panel-background">
-      <div className="panel-header">
+    <div className="h-full flex flex-col">
+      <div className="panel-header editor-header">
         <div className="panel-title">Editor</div>
         <div className="panel-actions">
           <button className="icon-btn" title="Copy Code" aria-label="Copy Code" onClick={handleCopyCode}>
@@ -254,47 +327,49 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
           </button>
         </div>
       </div>
-      <div className="flex-1 min-h-0 monaco-editor-wrapper">
-        <Editor
-          height="100%"
-          language="mermaid"
-          value={content}
-          onChange={handleEditorChange}
-          onMount={handleEditorDidMount}
-          theme={theme === 'dark' ? 'mermaid-dark' : 'mermaid-light'}
-          options={{
-            minimap: { enabled: false },
-            scrollBeyondLastLine: false,
-            fontSize: 14,
-            lineNumbers: 'on',
-            roundedSelection: false,
-            automaticLayout: true,
-            tabSize: 2,
-            insertSpaces: true,
-            wordWrap: 'off',
-            selectOnLineNumbers: true,
-            cursorStyle: 'line',
-            cursorBlinking: 'blink',
-            renderWhitespace: 'selection',
-            contextmenu: true,
-            smoothScrolling: true,
-            overviewRulerBorder: false,
-            scrollbar: {
-              vertical: 'auto',
-              horizontal: 'auto',
-              verticalScrollbarSize: 8,
-              horizontalScrollbarSize: 8,
-              useShadows: false,
-              verticalHasArrows: false,
-              horizontalHasArrows: false
-            },
-            find: {
-              addExtraSpaceOnTop: false,
-              autoFindInSelection: 'never',
-              seedSearchStringFromSelection: 'always'
-            }
-          }}
-        />
+      <div className="panel-body">
+        <div className="monaco-editor-wrapper">
+          <Editor
+            height="100%"
+            language="mermaid"
+            value={content}
+            onChange={handleEditorChange}
+            onMount={handleEditorDidMount}
+            theme={theme === 'dark' ? 'mermaid-dark' : 'mermaid-light'}
+            options={{
+              minimap: { enabled: false },
+              scrollBeyondLastLine: false,
+              fontSize: 14,
+              lineNumbers: 'on',
+              roundedSelection: false,
+              automaticLayout: true,
+              tabSize: 2,
+              insertSpaces: true,
+              wordWrap: 'off',
+              selectOnLineNumbers: true,
+              cursorStyle: 'line',
+              cursorBlinking: 'blink',
+              renderWhitespace: 'selection',
+              contextmenu: true,
+              smoothScrolling: true,
+              overviewRulerBorder: false,
+              scrollbar: {
+                vertical: 'auto',
+                horizontal: 'auto',
+                verticalScrollbarSize: 8,
+                horizontalScrollbarSize: 8,
+                useShadows: false,
+                verticalHasArrows: false,
+                horizontalHasArrows: false
+              },
+              find: {
+                addExtraSpaceOnTop: false,
+                autoFindInSelection: 'never',
+                seedSearchStringFromSelection: 'always'
+              }
+            }}
+          />
+        </div>
       </div>
     </div>
   );

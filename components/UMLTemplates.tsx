@@ -97,6 +97,7 @@ const UML_TEMPLATES: UMLTemplate[] = [
 export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
   const [selectedType, setSelectedType] = useState<string>('All');
   const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
+  const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
 
   // Get unique diagram types
   const diagramTypes = ['All', ...Array.from(new Set(UML_TEMPLATES.map(t => t.type)))];
@@ -107,14 +108,20 @@ export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
     : UML_TEMPLATES.filter(t => t.type === selectedType);
 
   const handleTemplateClick = (template: UMLTemplate) => {
+    setActiveTemplate(template.id);
     onInsertTemplate(template.code);
+    
+    // Clear active state after a short delay
+    setTimeout(() => {
+      setActiveTemplate(null);
+    }, 1000);
   };
 
   return (
-    <div className="h-full w-full flex flex-col bg-panel-background" style={{ margin: 0 }}>
+    <div className="h-full w-full flex flex-col" style={{ margin: 0 }}>
       {/* Header */}
-      <div className="p-3 border-b border-panel-border bg-header-background" style={{ margin: 0 }}>
-        <h2 className="text-sm font-semibold text-foreground" style={{ margin: 0 }}>UML Diagram Types</h2>
+      <div className="panel-header templates-header" style={{ margin: 0 }}>
+        <h2 className="panel-title" style={{ margin: 0 }}>Types</h2>
       </div>
 
       {/* Templates Grid - Single Row Layout */}
@@ -124,7 +131,11 @@ export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
             <button
               key={template.id}
               onClick={() => handleTemplateClick(template)}
-              className="bg-button-background hover:bg-button-hover border border-border rounded px-3 py-2 text-sm font-medium text-foreground hover:text-accent-foreground transition-colors whitespace-nowrap"
+              className={`px-3 py-2 text-sm font-medium rounded transition-all duration-200 whitespace-nowrap ${
+                activeTemplate === template.id
+                  ? 'bg-accent text-white border border-accent shadow-md'
+                  : 'bg-surface border border-muted/50 text-foreground hover:bg-surface/80 hover:border-muted'
+              }`}
               style={{ margin: 0 }}
               title={template.description}
             >

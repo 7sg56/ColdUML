@@ -231,16 +231,16 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
               { token: 'delimiter', foreground: 'ffffff' }
             ],
             colors: {
-              'editor.background': '#1a1a1a',
+              'editor.background': '#0a0a0a',
               'editor.foreground': '#ffffff',
-              'editorLineNumber.foreground': '#888888',
+              'editorLineNumber.foreground': '#666666',
               'editorLineNumber.activeForeground': '#ffffff',
               'editor.selectionBackground': 'rgba(0, 112, 243, 0.3)',
               'editor.selectionHighlightBackground': 'rgba(0, 112, 243, 0.1)',
               'editorCursor.foreground': '#ffffff',
-              'editorWhitespace.foreground': '#888888',
-              'editorIndentGuide.background': '#2a2a2a',
-              'editorIndentGuide.activeBackground': '#888888'
+              'editorWhitespace.foreground': '#666666',
+              'editorIndentGuide.background': '#1a1a1a',
+              'editorIndentGuide.activeBackground': '#666666'
             }
           });
         } else {

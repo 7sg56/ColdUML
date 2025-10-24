@@ -125,13 +125,13 @@ export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
       </div>
 
       {/* Templates Grid - Single Row Layout */}
-      <div className="flex-1 overflow-auto p-3" style={{ margin: 0 }}>
-        <div className="flex flex-wrap gap-2" style={{ margin: 0 }}>
+      <div className="flex-1 overflow-auto p-2" style={{ margin: 0 }}>
+        <div className="flex flex-wrap gap-1" style={{ margin: 0 }}>
           {UML_TEMPLATES.map((template) => (
             <button
               key={template.id}
               onClick={() => handleTemplateClick(template)}
-              className={`px-3 py-2 text-sm font-medium rounded transition-all duration-200 whitespace-nowrap ${
+              className={`px-2 py-1 text-xs font-medium rounded transition-all duration-200 whitespace-nowrap ${
                 activeTemplate === template.id
                   ? 'bg-accent text-white border border-accent shadow-md'
                   : 'bg-surface border border-muted/50 text-foreground hover:bg-surface/80 hover:border-muted'

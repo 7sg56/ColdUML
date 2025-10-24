@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
-/* Default dark theme - Lighter Vercel Dark */
+/* Default dark theme - Deep Dark */
 :root {
-  --bg: #0a0a0a;
+  --bg: #000000;
   --fg: #ffffff;
   --accent: #0070f3;
-  --muted: #888888;
-  --surface: #1a1a1a;
-  --border: #2a2a2a;
-  --panel-border: #2a2a2a;
+  --muted: #666666;
+  --surface: #0a0a0a;
+  --border: #1a1a1a;
+  --panel-border: #1a1a1a;
   --header-h: 56px;
 }
 
@@ -23,15 +23,15 @@ html.light {
   --panel-border: #eaeaea;
 }
 
-/* Dark theme variables - Lighter Vercel Dark */
+/* Dark theme variables - Deep Dark */
 html.dark {
-  --bg: #0a0a0a;
+  --bg: #000000;
   --fg: #ffffff;
   --accent: #0070f3;
-  --muted: #888888;
-  --surface: #1a1a1a;
-  --border: #2a2a2a;
-  --panel-border: #2a2a2a;
+  --muted: #666666;
+  --surface: #0a0a0a;
+  --border: #1a1a1a;
+  --panel-border: #1a1a1a;
 }
 
 * { box-sizing: border-box; }
@@ -748,7 +748,7 @@ main {
   
   main > aside {
     min-height: auto;
-    max-height: 140px;
+    max-height: 100px;
     overflow-y: auto;
     flex-shrink: 0;
   }
@@ -760,14 +760,36 @@ main {
   }
   
   main > div > section {
-    min-height: 180px;
+    min-height: 300px;
     flex: 1;
+    margin-bottom: 8px;
   }
   
-  /* Editor gets slightly more space on small screens */
+  /* Editor gets more space on small screens */
   main > div > section:first-child {
-    flex: 1.2;
-    min-height: 200px;
+    flex: 1.5;
+    min-height: 350px;
+  }
+  
+  /* Preview panel */
+  main > div > section:last-child {
+    flex: 1;
+    min-height: 250px;
+  }
+  
+  /* Override left section layout for mobile */
+  .left {
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+  
+  .left > .panel {
+    flex: 0 0 auto !important;
+  }
+  
+  .left > .panel.grow {
+    flex: 1 1 auto !important;
+    min-height: 350px !important;
   }
 }
 

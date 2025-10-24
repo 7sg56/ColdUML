@@ -156,10 +156,10 @@ const SimplePreview = ({
                 fontSize: "10px",
                 primaryColor: theme === "dark" ? "#0070f3" : "#0366d6",
                 primaryTextColor: theme === "dark" ? "#ffffff" : "#24292e",
-                primaryBorderColor: theme === "dark" ? "#2a2a2a" : "#d0d7de",
-                lineColor: theme === "dark" ? "#888888" : "#6a737d",
-                secondaryColor: theme === "dark" ? "#1a1a1a" : "#f6f8fa",
-                tertiaryColor: theme === "dark" ? "#0a0a0a" : "#ffffff"
+                primaryBorderColor: theme === "dark" ? "#1a1a1a" : "#d0d7de",
+                lineColor: theme === "dark" ? "#666666" : "#6a737d",
+                secondaryColor: theme === "dark" ? "#0a0a0a" : "#f6f8fa",
+                tertiaryColor: theme === "dark" ? "#000000" : "#ffffff"
               }
             });
 
@@ -202,9 +202,9 @@ const SimplePreview = ({
             fontSize: "10px",
             primaryColor: theme === "dark" ? "#0070f3" : "#0070f3",
             primaryTextColor: theme === "dark" ? "#ffffff" : "#000000",
-            primaryBorderColor: theme === "dark" ? "#333333" : "#eaeaea",
+            primaryBorderColor: theme === "dark" ? "#1a1a1a" : "#eaeaea",
             lineColor: theme === "dark" ? "#666666" : "#666666",
-            secondaryColor: theme === "dark" ? "#111111" : "#fafafa",
+            secondaryColor: theme === "dark" ? "#0a0a0a" : "#fafafa",
             tertiaryColor: theme === "dark" ? "#000000" : "#ffffff"
           }
         });

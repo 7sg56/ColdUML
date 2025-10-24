@@ -319,6 +319,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden; /* Disable body scroll */
+  height: 100vh; /* Full viewport height */
 }
 
 /* Mermaid diagram styling with reliable fonts */
@@ -461,6 +463,45 @@ body {
 /* Ensure proper scrolling in panels */
 .panel-scroll {
   overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Main app container - full height, no scroll */
+#__next {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Root container - full height, no scroll */
+html, body {
+  height: 100%;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+/* Main layout - full height, no scroll */
+main {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Editor and preview panels - internal scroll only */
+.monaco-editor-wrapper {
+  height: 100%;
+  overflow: hidden;
+}
+
+.monaco-editor {
+  height: 100% !important;
+}
+
+/* Preview container - internal scroll only */
+[data-testid="mermaid-preview-container"] {
+  height: 100%;
+  overflow: auto;
   overflow-x: hidden;
 }
 

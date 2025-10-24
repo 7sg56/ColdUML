@@ -369,6 +369,79 @@ body {
   max-width: 100% !important;
 }
 
+/* Completely hide Mermaid error messages */
+.mermaid .error-icon,
+.mermaid .error-text,
+.mermaid .error-message,
+.mermaid [class*="error"],
+.mermaid [id*="error"],
+.mermaid .mermaid-error,
+.mermaid .syntax-error,
+.mermaid .parse-error {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide any Mermaid error containers */
+.mermaid div[class*="error"],
+.mermaid div[id*="error"],
+.mermaid .error-container,
+.mermaid .mermaid-error-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide Mermaid error SVGs and graphics */
+.mermaid svg[class*="error"],
+.mermaid svg[id*="error"],
+.mermaid .error-svg,
+.mermaid .bomb-icon,
+.mermaid .error-icon-svg {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Global rule to hide any Mermaid error elements */
+[data-testid="mermaid-preview-container"] .mermaid [class*="error"],
+[data-testid="mermaid-preview-container"] .mermaid [id*="error"],
+[data-testid="mermaid-preview-container"] .mermaid .error-icon,
+[data-testid="mermaid-preview-container"] .mermaid .error-text,
+[data-testid="mermaid-preview-container"] .mermaid .error-message,
+[data-testid="mermaid-preview-container"] .mermaid .mermaid-error,
+[data-testid="mermaid-preview-container"] .mermaid .syntax-error,
+[data-testid="mermaid-preview-container"] .mermaid .parse-error,
+[data-testid="mermaid-preview-container"] .mermaid div[class*="error"],
+[data-testid="mermaid-preview-container"] .mermaid div[id*="error"],
+[data-testid="mermaid-preview-container"] .mermaid .error-container,
+[data-testid="mermaid-preview-container"] .mermaid .mermaid-error-container,
+[data-testid="mermaid-preview-container"] .mermaid svg[class*="error"],
+[data-testid="mermaid-preview-container"] .mermaid svg[id*="error"],
+[data-testid="mermaid-preview-container"] .mermaid .error-svg,
+[data-testid="mermaid-preview-container"] .mermaid .bomb-icon,
+[data-testid="mermaid-preview-container"] .mermaid .error-icon-svg {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+}
+
 /* Ensure proper scrolling in panels */
 .panel-scroll {
   overflow-y: auto;

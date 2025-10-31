@@ -134,26 +134,26 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: '666666', fontStyle: 'italic' },
-        { token: 'keyword', foreground: '0070f3', fontStyle: 'bold' },
-        { token: 'operator', foreground: '0070f3' },
-        { token: 'identifier', foreground: 'ffffff' },
-        { token: 'string', foreground: '0070f3' },
-        { token: 'number', foreground: '0070f3' },
-        { token: 'bracket', foreground: 'ffffff' },
-        { token: 'delimiter', foreground: 'ffffff' }
+        { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '79b8ff', fontStyle: 'bold' },
+        { token: 'operator', foreground: '79b8ff' },
+        { token: 'identifier', foreground: 'f0f6fc' },
+        { token: 'string', foreground: '9ecbff' },
+        { token: 'number', foreground: '79b8ff' },
+        { token: 'bracket', foreground: 'f0f6fc' },
+        { token: 'delimiter', foreground: 'f0f6fc' }
       ],
       colors: {
-        'editor.background': '#1a1a1a',
-        'editor.foreground': '#ffffff',
-        'editorLineNumber.foreground': '#888888',
-        'editorLineNumber.activeForeground': '#ffffff',
-        'editor.selectionBackground': 'rgba(0, 112, 243, 0.3)',
-        'editor.selectionHighlightBackground': 'rgba(0, 112, 243, 0.1)',
-        'editorCursor.foreground': '#ffffff',
-        'editorWhitespace.foreground': '#888888',
-        'editorIndentGuide.background': '#2a2a2a',
-        'editorIndentGuide.activeBackground': '#888888'
+        'editor.background': '#0d1117',
+        'editor.foreground': '#f0f6fc',
+        'editorLineNumber.foreground': '#7d8590',
+        'editorLineNumber.activeForeground': '#f0f6fc',
+        'editor.selectionBackground': 'rgba(56, 139, 253, 0.3)',
+        'editor.selectionHighlightBackground': 'rgba(56, 139, 253, 0.1)',
+        'editorCursor.foreground': '#f0f6fc',
+        'editorWhitespace.foreground': '#7d8590',
+        'editorIndentGuide.background': '#21262d',
+        'editorIndentGuide.activeBackground': '#7d8590'
       }
     });
 
@@ -221,26 +221,26 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
             base: 'vs-dark',
             inherit: true,
             rules: [
-              { token: 'comment', foreground: '666666', fontStyle: 'italic' },
-              { token: 'keyword', foreground: '0070f3', fontStyle: 'bold' },
-              { token: 'operator', foreground: '0070f3' },
-              { token: 'identifier', foreground: 'ffffff' },
-              { token: 'string', foreground: '0070f3' },
-              { token: 'number', foreground: '0070f3' },
-              { token: 'bracket', foreground: 'ffffff' },
-              { token: 'delimiter', foreground: 'ffffff' }
+              { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
+              { token: 'keyword', foreground: '79b8ff', fontStyle: 'bold' },
+              { token: 'operator', foreground: '79b8ff' },
+              { token: 'identifier', foreground: 'f0f6fc' },
+              { token: 'string', foreground: '9ecbff' },
+              { token: 'number', foreground: '79b8ff' },
+              { token: 'bracket', foreground: 'f0f6fc' },
+              { token: 'delimiter', foreground: 'f0f6fc' }
             ],
             colors: {
-              'editor.background': '#0a0a0a',
-              'editor.foreground': '#ffffff',
-              'editorLineNumber.foreground': '#666666',
-              'editorLineNumber.activeForeground': '#ffffff',
-              'editor.selectionBackground': 'rgba(0, 112, 243, 0.3)',
-              'editor.selectionHighlightBackground': 'rgba(0, 112, 243, 0.1)',
-              'editorCursor.foreground': '#ffffff',
-              'editorWhitespace.foreground': '#666666',
-              'editorIndentGuide.background': '#1a1a1a',
-              'editorIndentGuide.activeBackground': '#666666'
+              'editor.background': '#0d1117',
+              'editor.foreground': '#f0f6fc',
+              'editorLineNumber.foreground': '#7d8590',
+              'editorLineNumber.activeForeground': '#f0f6fc',
+              'editor.selectionBackground': 'rgba(56, 139, 253, 0.3)',
+              'editor.selectionHighlightBackground': 'rgba(56, 139, 253, 0.1)',
+              'editorCursor.foreground': '#f0f6fc',
+              'editorWhitespace.foreground': '#7d8590',
+              'editorIndentGuide.background': '#21262d',
+              'editorIndentGuide.activeBackground': '#7d8590'
             }
           });
         } else {
@@ -285,7 +285,8 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       
       if (model) {
         // Clear existing markers
-        editor.deltaDecorations(editor.getModel()?.getAllDecorations().map((d: any) => d.id) || [], []);
+        const existingDecorations = editor.getModel()?.getAllDecorations() || [];
+        editor.deltaDecorations(existingDecorations.map((d: { id: string }) => d.id), []);
         
         // Add error marker to the entire content
         const fullRange = {
@@ -309,7 +310,8 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       const editor = editorRef.current;
       const model = editor.getModel();
       if (model) {
-        editor.deltaDecorations(editor.getModel()?.getAllDecorations().map((d: any) => d.id) || [], []);
+        const existingDecorations = editor.getModel()?.getAllDecorations() || [];
+        editor.deltaDecorations(existingDecorations.map((d: { id: string }) => d.id), []);
       }
     }
   }, [errorMessage]);

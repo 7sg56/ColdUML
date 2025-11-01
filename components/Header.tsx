@@ -25,7 +25,7 @@ export default function Header({ theme, onThemeChange }: HeaderProps) {
   return (
     <header className="app-header">
       <div className="brand" title="CoolUML">
-        <span className="brand-text">CoolUML</span>
+        <span className="brand-text">ColdUML</span>
       </div>
       <div className="header-actions">
         <button 

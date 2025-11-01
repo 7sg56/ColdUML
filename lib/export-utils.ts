@@ -325,7 +325,7 @@ async function svgToPng(svgString: string): Promise<Blob> {
       try {
         const svgDataUrl = 'data:image/svg+xml;charset=utf-8;base64,' + btoa(unescape(encodeURIComponent(svgString)));
         img.src = svgDataUrl;
-      } catch (encodeError) {
+      } catch {
         reject(new Error('Failed to encode SVG for conversion'));
       }
     } catch (setupError) {
@@ -399,7 +399,7 @@ function downloadBlob(blob: Blob, filename: string): Promise<void> {
               cleanup();
               resolve();
             }, 100);
-          } catch (dispatchError) {
+          } catch {
             // Fallback: try direct click method
             try {
               link.click();
@@ -407,7 +407,7 @@ function downloadBlob(blob: Blob, filename: string): Promise<void> {
                 cleanup();
                 resolve();
               }, 100);
-            } catch (clickError) {
+            } catch {
               // Final fallback: open in new window
               try {
                 const newWindow = window.open(url, '_blank');
@@ -465,25 +465,6 @@ function downloadBlob(blob: Blob, filename: string): Promise<void> {
 function generateFilename(extension: string): string {
   const timestamp = new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-');
   return `mermaid-diagram-${timestamp}.${extension}`;
-}
-
-/**
- * Wait for diagram to be rendered
- */
-async function waitForDiagram(maxWaitMs: number = 5000): Promise<SVGElement | null> {
-  const startTime = Date.now();
-  
-  while (Date.now() - startTime < maxWaitMs) {
-    const svg = getRenderedSVG();
-    if (svg) {
-      return svg;
-    }
-    
-    // Wait 200ms before trying again
-    await new Promise(resolve => setTimeout(resolve, 200));
-  }
-  
-  return null;
 }
 
 /**
@@ -780,7 +761,9 @@ function getMermaidContent(): string | null {
   // Method 1: Try to find Monaco editor's model content
   try {
     // Access Monaco editor instance via window (if available)
-    const monacoEditor = (window as any).monaco?.editor;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const windowWithMonaco = window as any;
+    const monacoEditor = windowWithMonaco.monaco?.editor;
     if (monacoEditor) {
       // Try to find the editor instance
       const editors = monacoEditor.getEditors();
@@ -791,7 +774,7 @@ function getMermaidContent(): string | null {
         }
       }
     }
-  } catch (e) {
+  } catch {
     // Ignore errors
   }
 
@@ -1013,7 +996,7 @@ export async function copyMermaidCode(code: string): Promise<ExportResult> {
     return {
       success: true
     };
-  } catch (error) {
+  } catch {
     return {
       success: false,
       error: 'Failed to copy to clipboard'

@@ -81,7 +81,7 @@ function MermaidUMLEditor() {
   };
 
   const handleDownloadPNG = async () => {
-    const result = await exportAsPNG();
+    const result = await exportAsPNG(content);
     if (result.success) {
       toast.success("PNG exported successfully");
     } else {
@@ -90,7 +90,7 @@ function MermaidUMLEditor() {
   };
 
   const handleDownloadSVG = async () => {
-    const result = await exportAsSVG();
+    const result = await exportAsSVG(content);
     if (result.success) {
       toast.success("SVG exported successfully");
     } else {

@@ -114,9 +114,9 @@ export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
   };
 
   return (
-    <div className="h-full w-full flex items-center p-2">
-      {/* Horizontal Templates */}
-      <div className="flex flex-wrap gap-1.5 items-center w-full">
+    <div className="h-full w-full flex items-center">
+      {/* Horizontal scrolling templates - optimized for mobile */}
+      <div className="flex gap-2 items-center w-full overflow-x-auto">
         {UML_TEMPLATES.map((template) => {
           const isActive = activeTemplate === template.id;
           
@@ -125,18 +125,18 @@ export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
               key={template.id}
               onClick={() => handleTemplateClick(template)}
               className={`
-                group relative
-                px-2.5 py-2 
+                group relative flex-shrink-0
+                px-3 py-2
                 text-xs font-medium 
-                rounded
+                rounded-lg
                 transition-all duration-150
                 border
-                flex items-center gap-1.5
+                flex items-center gap-2
                 whitespace-nowrap
                 ${
                   isActive
-                    ? 'bg-muted/50 text-foreground border-muted/40 shadow-sm scale-[0.95]'
-                    : 'bg-surface/40 border-muted/20 text-foreground/70 hover:bg-surface/60 hover:border-muted/30 hover:text-foreground/85'
+                    ? 'bg-accent/10 text-accent border-accent/30 shadow-sm scale-[0.96]'
+                    : 'bg-surface/60 border-border/40 text-foreground/80 hover:bg-accent/5 hover:border-accent/20 hover:text-foreground active:scale-95'
                 }
               `}
               title={template.description}
@@ -148,15 +148,15 @@ export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
                 transition-colors duration-150
                 ${
                   isActive
-                    ? 'text-foreground/90'
-                    : 'text-muted-foreground group-hover:text-foreground/65'
+                    ? 'text-accent'
+                    : 'text-muted-foreground group-hover:text-foreground/80'
                 }
               `}>
                 {template.icon}
               </div>
               
               {/* Name */}
-              <span>{template.name}</span>
+              <span className="font-semibold">{template.name}</span>
             </button>
           );
         })}

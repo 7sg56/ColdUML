@@ -142,25 +142,30 @@ function MermaidUMLEditor() {
     <div className="h-screen flex flex-col overflow-hidden">
       <Header theme={theme} onThemeChange={setTheme} />
 
-      {/* Main content area - Full width layout with center divider */}
+      {/* Main content area - Responsive layout for mobile, tablet, and desktop */}
       <main
         id="main-content"
         className="flex-1 flex flex-col lg:flex-row overflow-hidden"
         role="main"
         aria-label="UML diagram editor workspace"
       >
-        {/* Left Column: HelperPanel + EditorPanel (stacked) */}
+        {/* Left Section: Templates + Editor (stacked vertically) */}
         <section className="left flex-1">
-          {/* HelperPanel - Top of left column */}
+          {/* Templates Panel - Compact on mobile, normal on desktop */}
           <aside
             className="panel"
             role="complementary"
             aria-label="UML template library"
           >
-            <UMLTemplates onInsertTemplate={handleInsertTemplate} />
+            <div className="panel-header templates-header">
+              <div className="panel-title">Templates</div>
+            </div>
+            <div className="panel-body">
+              <UMLTemplates onInsertTemplate={handleInsertTemplate} />
+            </div>
           </aside>
 
-          {/* EditorPanel - Bottom of left column (takes remaining space) */}
+          {/* Editor Panel - Fixed height on mobile/tablet, flexible on desktop */}
           <section
             className="panel grow"
             role="region"
@@ -176,7 +181,7 @@ function MermaidUMLEditor() {
           </section>
         </section>
 
-        {/* Right Column: PreviewPanel (full height) */}
+        {/* Right Section: Preview Panel (full height) */}
         <section
           className="right flex-1"
           role="region"

@@ -354,6 +354,18 @@ body {
   overflow: auto !important;
 }
 
+/* Mobile viewport fix */
+@supports (-webkit-touch-callout: none) {
+  /* iOS specific fix for viewport height */
+  body {
+    min-height: -webkit-fill-available;
+  }
+  
+  .h-screen {
+    height: -webkit-fill-available;
+  }
+}
+
 /* Monaco Editor Styles */
 .monaco-editor-container {
   width: 100%;
@@ -741,131 +753,391 @@ main {
 
 /* Responsive layout utilities */
 @media (max-width: 640px) {
-  /* Small mobile: Vertical stack with compact helper panel */
-  main {
+  /* Small mobile: Vertical stack with fixed-height scrollable boxes */
+  #main-content {
     flex-direction: column !important;
+    padding: 0 !important;
+    gap: 0 !important;
   }
   
-  main > aside {
-    min-height: auto;
-    max-height: 100px;
-    overflow-y: auto;
-    flex-shrink: 0;
-  }
-  
-  main > div {
-    flex-direction: column !important;
-    min-height: 0;
-    flex: 1;
-  }
-  
-  main > div > section {
-    min-height: 300px;
-    flex: 1;
-    margin-bottom: 8px;
-  }
-  
-  /* Editor gets more space on small screens */
-  main > div > section:first-child {
-    flex: 1.5;
-    min-height: 350px;
-  }
-  
-  /* Preview panel */
-  main > div > section:last-child {
-    flex: 1;
-    min-height: 250px;
-  }
-  
-  /* Override left section layout for mobile */
+  /* Templates panel - compact horizontal scrollable bar */
   .left {
+    display: flex !important;
+    flex-direction: column !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--panel-border);
+    padding: 8px !important;
     gap: 8px !important;
-    padding: 12px !important;
-  }
-  
-  .left > .panel {
+    height: auto !important;
     flex: 0 0 auto !important;
   }
   
+  .left > .panel:first-child {
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+    flex: 0 0 60px !important;
+    overflow: hidden !important;
+  }
+  
+  .left > .panel:first-child .panel-body {
+    padding: 4px 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Editor panel - fixed height with internal scroll */
   .left > .panel.grow {
+    height: 300px !important;
+    min-height: 300px !important;
+    max-height: 300px !important;
+    flex: 0 0 300px !important;
+    overflow: hidden !important;
+  }
+  
+  .left > .panel.grow .panel-body {
+    overflow: hidden !important;
+    height: 100% !important;
+  }
+  
+  .left > .panel.grow .monaco-editor-wrapper {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    height: 100% !important;
+  }
+  
+  /* Preview panel - remaining height with internal scroll */
+  .right {
     flex: 1 1 auto !important;
-    min-height: 350px !important;
+    min-height: 0 !important;
+    padding: 8px !important;
+    border-left: none !important;
+  }
+  
+  .right .panel {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  
+  .right .panel-body {
+    overflow: hidden !important;
+  }
+  
+  .right .preview {
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Compact panel headers on mobile */
+  .panel-header {
+    padding: 6px 10px !important;
+    min-height: 36px !important;
+  }
+  
+  .panel-title {
+    font-size: 12px !important;
+  }
+  
+  .icon-btn {
+    min-width: 26px !important;
+    height: 26px !important;
+    font-size: 11px !important;
+  }
+  
+  .icon-btn svg {
+    width: 13px !important;
+    height: 13px !important;
   }
 }
 
 @media (min-width: 641px) and (max-width: 1023px) {
-  /* Tablet: Helper panel on top, editor and preview side by side */
-  main {
+  /* Tablet: Vertical stack with well-defined scrollable boxes */
+  #main-content {
     flex-direction: column !important;
+    gap: 0 !important;
   }
   
-  main > aside {
-    min-height: auto;
-    max-height: 160px;
-    overflow-y: auto;
-    flex-shrink: 0;
+  /* Templates panel - horizontal scrollable bar at top */
+  .left {
+    display: flex !important;
+    flex-direction: column !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--panel-border);
+    padding: 12px !important;
+    gap: 12px !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
   }
   
-  main > div {
-    flex-direction: row !important;
-    flex: 1;
-    min-height: 0;
+  .left > .panel:first-child {
+    height: 80px !important;
+    min-height: 80px !important;
+    max-height: 80px !important;
+    flex: 0 0 80px !important;
+    overflow: hidden !important;
   }
   
-  main > div > section {
-    flex: 1;
-    min-height: 300px;
+  .left > .panel:first-child .panel-body {
+    padding: 8px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Editor panel - fixed height with internal scroll */
+  .left > .panel.grow {
+    height: 350px !important;
+    min-height: 350px !important;
+    max-height: 350px !important;
+    flex: 0 0 350px !important;
+    overflow: hidden !important;
+  }
+  
+  .left > .panel.grow .panel-body {
+    overflow: hidden !important;
+  }
+  
+  .left > .panel.grow .monaco-editor-wrapper {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Preview panel - remaining height with internal scroll */
+  .right {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 12px !important;
+    border-left: none !important;
+  }
+  
+  .right .panel {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  
+  .right .panel-body {
+    overflow: hidden !important;
+  }
+  
+  .right .preview {
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 }
 
 @media (min-width: 1024px) and (max-width: 1279px) {
-  /* Large tablet/small desktop: Helper panel on top, editor and preview side by side */
-  main {
+  /* Large tablet/small desktop: Vertical layout with scrollable boxes */
+  #main-content {
     flex-direction: column !important;
+    gap: 0 !important;
   }
   
-  main > aside {
-    min-height: auto;
-    max-height: 180px;
-    overflow-y: auto;
-    flex-shrink: 0;
+  /* Templates panel - compact horizontal scrollable bar */
+  .left {
+    display: flex !important;
+    flex-direction: column !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--panel-border);
+    padding: 14px !important;
+    gap: 14px !important;
+    height: auto !important;
+    flex: 0 0 auto !important;
   }
   
-  main > div {
-    flex-direction: row !important;
-    flex: 1;
-    min-height: 0;
+  .left > .panel:first-child {
+    height: 90px !important;
+    min-height: 90px !important;
+    max-height: 90px !important;
+    flex: 0 0 90px !important;
+    overflow: hidden !important;
   }
   
-  main > div > section {
-    flex: 1;
-    min-height: 400px;
+  .left > .panel:first-child .panel-body {
+    padding: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Editor panel - fixed height with internal scroll */
+  .left > .panel.grow {
+    height: 400px !important;
+    min-height: 400px !important;
+    max-height: 400px !important;
+    flex: 0 0 400px !important;
+    overflow: hidden !important;
+  }
+  
+  .left > .panel.grow .panel-body {
+    overflow: hidden !important;
+  }
+  
+  .left > .panel.grow .monaco-editor-wrapper {
+    overflow: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  
+  /* Preview panel - remaining height with internal scroll */
+  .right {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 14px !important;
+    border-left: none !important;
+  }
+  
+  .right .panel {
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  
+  .right .panel-body {
+    overflow: hidden !important;
+  }
+  
+  .right .preview {
+    overflow-y: auto !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 }
 
 @media (min-width: 1280px) {
-  /* Desktop: Three-panel layout side by side */
-  main {
+  /* Desktop: Three-panel layout side by side with normal desktop behavior */
+  #main-content {
     flex-direction: row !important;
   }
   
-  main > aside {
-    width: 16rem;
-    flex-shrink: 0;
-    min-height: auto;
-    max-height: none;
-    overflow-y: auto;
+  .left {
+    width: auto !important;
+    flex: 1 !important;
+    border-right: 1px solid var(--panel-border) !important;
+    border-bottom: none !important;
+    padding: 16px !important;
+    gap: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
   
-  main > div {
-    flex-direction: row !important;
-    flex: 1;
-    min-height: 0;
+  .left > .panel:first-child {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    flex: 0 0 auto !important;
   }
   
-  main > div > section {
-    flex: 1;
-    min-height: auto;
+  .left > .panel.grow {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 1 1 0 !important;
+  }
+  
+  .right {
+    flex: 1 !important;
+    padding: 16px !important;
+    border-left: none !important;
+  }
+}
+
+/* Mobile-specific improvements for touch interactions */
+@media (max-width: 1023px) {
+  /* Compact header on mobile/tablet */
+  .app-header {
+    padding: 12px 16px !important;
+    min-height: 50px !important;
+  }
+  
+  .brand-text {
+    font-size: 20px !important;
+  }
+  
+  .theme-toggle,
+  .github-btn {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  /* Touch-friendly button sizes */
+  .icon-btn {
+    min-width: 32px !important;
+    height: 32px !important;
+    touch-action: manipulation !important;
+  }
+  
+  /* Horizontal scrolling for templates */
+  .left > .panel:first-child .panel-body {
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  /* Prevent text selection during scrolling */
+  .panel-body {
+    -webkit-user-select: none !important;
+    user-select: none !important;
+  }
+  
+  /* But allow text selection in editor */
+  .monaco-editor,
+  .monaco-editor * {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+  }
+  
+  /* Smooth scrolling on mobile */
+  .panel,
+  .panel-body,
+  .preview,
+  .monaco-editor-wrapper {
+    scroll-behavior: smooth !important;
+  }
+  
+  /* Hide scrollbars but keep functionality */
+  .left > .panel:first-child .panel-body::-webkit-scrollbar {
+    height: 4px !important;
+  }
+  
+  .left > .panel:first-child .panel-body::-webkit-scrollbar-thumb {
+    background: var(--muted) !important;
+    border-radius: 2px !important;
+  }
+  
+  .left > .panel:first-child .panel-body::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  
+  /* Better scrollbars for preview and editor on mobile */
+  .preview::-webkit-scrollbar,
+  .monaco-editor-wrapper::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+  }
+  
+  .preview::-webkit-scrollbar-thumb,
+  .monaco-editor-wrapper::-webkit-scrollbar-thumb {
+    background: var(--muted) !important;
+    border-radius: 3px !important;
+  }
+  
+  .preview::-webkit-scrollbar-track,
+  .monaco-editor-wrapper::-webkit-scrollbar-track {
+    background: var(--surface) !important;
+  }
+  
+  /* Prevent iOS Safari bounce on panels */
+  .panel,
+  .panel-body {
+    overscroll-behavior: contain !important;
+  }
+  
+  /* Optimize touch events */
+  button,
+  .icon-btn,
+  .theme-toggle,
+  .github-btn {
+    -webkit-tap-highlight-color: transparent !important;
   }
 }
 

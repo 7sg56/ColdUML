@@ -8,7 +8,6 @@ interface SimpleEditorProps {
   content: string;
   onChange: (content: string) => void;
   theme?: 'light' | 'dark';
-  errorMessage?: string;
 }
 
 export interface SimpleEditorRef {
@@ -19,8 +18,7 @@ export interface SimpleEditorRef {
 const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({ 
   content, 
   onChange, 
-  theme = 'light',
-  errorMessage
+  theme = 'light'
 }, ref) => {
   const editorRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -301,44 +299,24 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     }
   }, [theme]);
 
-  // Handle error messages
-  useEffect(() => {
-    if (editorRef.current && errorMessage) {
-      const editor = editorRef.current;
-      const model = editor.getModel();
+  // Remove error decoration logic - errors are only shown in preview now
+  // This prevents interference with editor focus and cursor behavior
+
+  // Handle clicks on editor wrapper to restore focus
+  const handleEditorWrapperClick = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (editorRef.current) {
+      // Force focus on click
+      editorRef.current.focus();
       
-      if (model) {
-        // Clear existing markers
-        const existingDecorations = editor.getModel()?.getAllDecorations() || [];
-        editor.deltaDecorations(existingDecorations.map((d: { id: string }) => d.id), []);
-        
-        // Add error marker to the entire content
-        const fullRange = {
-          startLineNumber: 1,
-          startColumn: 1,
-          endLineNumber: model.getLineCount(),
-          endColumn: model.getLineMaxColumn(model.getLineCount())
-        };
-        
-        editor.deltaDecorations([], [{
-          range: fullRange,
-          options: {
-            className: 'error-line',
-            glyphMarginClassName: 'error-glyph',
-            hoverMessage: { value: errorMessage }
-          }
-        }]);
-      }
-    } else if (editorRef.current && !errorMessage) {
-      // Clear error markers when no error
-      const editor = editorRef.current;
-      const model = editor.getModel();
-      if (model) {
-        const existingDecorations = editor.getModel()?.getAllDecorations() || [];
-        editor.deltaDecorations(existingDecorations.map((d: { id: string }) => d.id), []);
-      }
+      // Also trigger layout update to ensure editor is responsive
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.layout();
+        }
+      }, 10);
     }
-  }, [errorMessage]);
+  }, []);
 
   return (
     <div className="h-full flex flex-col">
@@ -354,7 +332,11 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
         </div>
       </div>
       <div className="panel-body">
-        <div className="monaco-editor-wrapper">
+        <div 
+          className="monaco-editor-wrapper"
+          onClick={handleEditorWrapperClick}
+          onMouseDown={handleEditorWrapperClick}
+        >
           <Editor
             height="100%"
             language="mermaid"
@@ -379,6 +361,9 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
               contextmenu: true,
               smoothScrolling: true,
               overviewRulerBorder: false,
+              readOnly: false,
+              domReadOnly: false,
+              cursorSmoothCaretAnimation: 'on',
               scrollbar: {
                 vertical: 'auto',
                 horizontal: 'auto',

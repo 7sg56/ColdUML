@@ -589,7 +589,8 @@ html.light .mermaid .edgeLabel {
   border-radius: 8px; 
   padding: 16px; 
   overflow: auto; 
-  background: var(--surface); 
+  background: var(--surface);
+  position: relative; /* Contain absolute positioned error overlays */
 }
 .preview img { max-width: 100%; height: auto; }
 
@@ -682,20 +683,62 @@ html.light .mermaid .edgeLabel {
   top: -9999px !important;
 }
 
-/* Monaco Editor error styling */
-.monaco-editor .error-line {
-  background-color: rgba(255, 0, 0, 0.1) !important;
-  border-left: 3px solid #ff4444 !important;
+/* Monaco Editor - Ensure cursor remains visible and editor stays interactive */
+.monaco-editor .cursor,
+.monaco-editor .cursors-layer {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
-.monaco-editor .error-glyph {
-  background-color: #ff4444 !important;
-  color: white !important;
+/* Prevent editor from becoming disabled during error state */
+.monaco-editor .view-lines,
+.monaco-editor .view-overlays,
+.monaco-editor .overlayWidgets,
+.monaco-editor .inputarea {
+  pointer-events: auto !important;
 }
 
-.monaco-editor .error-glyph::before {
-  content: "!" !important;
-  font-weight: bold !important;
+/* Ensure the editor is always interactive and focusable */
+.monaco-editor-wrapper {
+  cursor: text !important;
+}
+
+.monaco-editor {
+  pointer-events: auto !important;
+}
+
+.monaco-editor .monaco-editor-background,
+.monaco-editor .overflow-guard {
+  pointer-events: auto !important;
+}
+
+/* Ensure cursor blinks even with error styling */
+.monaco-editor .cursor {
+  animation: monaco-cursor-blink 1s step-end infinite !important;
+  display: block !important;
+}
+
+.monaco-editor .cursors-layer {
+  display: block !important;
+}
+
+@keyframes monaco-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Force cursor to be visible always */
+.monaco-editor .cursor-line-style {
+  display: block !important;
+  visibility: visible !important;
+}
+
+/* Ensure text input area is always active */
+.monaco-editor textarea.inputarea {
+  pointer-events: auto !important;
+  opacity: 0 !important;
+  position: absolute !important;
 }
 
 /* Ensure proper scrolling in panels */

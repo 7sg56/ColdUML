@@ -381,9 +381,6 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
                 enabled: false
               },
               folding: false,
-              lightbulb: {
-                enabled: 'off'
-              },
               scrollbar: {
                 vertical: 'auto',
                 horizontal: 'auto',

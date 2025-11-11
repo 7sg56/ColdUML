@@ -176,7 +176,6 @@ function MermaidUMLEditor() {
               content={content}
               onChange={handleEditorContentChange}
               theme={theme}
-              errorMessage={errorMessage || undefined}
             />
           </section>
         </section>

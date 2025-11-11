@@ -295,7 +295,10 @@ const SimplePreview = ({
       <div className="panel-body">
         <div className="preview">
           {isRendering && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/80 z-10">
+            <div className="absolute inset-0 flex items-center justify-center z-10" style={{ 
+              backgroundColor: 'var(--surface)',
+              opacity: 0.95
+            }}>
               <div className="text-center">
                 <svg
                   className="animate-spin w-8 h-8 mx-auto mb-2 text-primary"
@@ -322,9 +325,11 @@ const SimplePreview = ({
               </div>
             </div>
           )}
-          {/* Empty state overlay */}
+          {/* Empty state overlay - Only shows inside preview panel */}
           {!content.trim() && (
-            <div className="absolute inset-0 flex items-center justify-center bg-preview-background z-20">
+            <div className="absolute inset-0 flex items-center justify-center z-20" style={{ 
+              backgroundColor: 'var(--surface)'
+            }}>
               <div className="text-center text-muted-foreground">
                 <svg
                   className="w-16 h-16 mx-auto mb-4 opacity-50"
@@ -345,9 +350,12 @@ const SimplePreview = ({
               </div>
             </div>
           )}
-          {/* Error state overlay */}
+          {/* Error state overlay - Only shows inside preview panel */}
           {hasError && content.trim() && (
-            <div className="absolute inset-0 flex items-center justify-center bg-preview-background z-20">
+            <div className="absolute inset-0 flex items-center justify-center z-20" style={{ 
+              backgroundColor: 'var(--surface)',
+              backdropFilter: 'blur(2px)'
+            }}>
               <div className="text-center">
                 <svg
                   className="w-16 h-16 mx-auto mb-4 text-red-500"

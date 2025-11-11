@@ -364,6 +364,26 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
               readOnly: false,
               domReadOnly: false,
               cursorSmoothCaretAnimation: 'on',
+              // Disable ALL suggestions and autocomplete
+              quickSuggestions: false,
+              suggestOnTriggerCharacters: false,
+              acceptSuggestionOnEnter: 'off',
+              wordBasedSuggestions: 'off',
+              suggest: {
+                
+                showWords: false,
+                showSnippets: false
+              },
+              parameterHints: {
+                enabled: false
+              },
+              hover: {
+                enabled: false
+              },
+              folding: false,
+              lightbulb: {
+                enabled: 'off'
+              },
               scrollbar: {
                 vertical: 'auto',
                 horizontal: 'auto',

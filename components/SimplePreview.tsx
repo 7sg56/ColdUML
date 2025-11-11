@@ -13,29 +13,6 @@ interface SimplePreviewProps {
   hasError?: boolean;
 }
 
-const DEFAULT_UML_CONTENT = `classDiagram
-    class Animal {
-        +String name
-        +int age
-        +makeSound()
-        +move()
-    }
-    
-    class Dog {
-        +String breed
-        +bark()
-        +wagTail()
-    }
-    
-    class Cat {
-        +String color
-        +meow()
-        +purr()
-    }
-    
-    Animal <|-- Dog
-    Animal <|-- Cat`;
-
 const SimplePreview = ({
   content,
   theme,
@@ -293,20 +270,35 @@ const SimplePreview = ({
         </div>
       </div>
       <div className="panel-body">
-        <div className="preview">
+        <div className="preview" style={{ position: 'relative' }}>
           {isRendering && (
-            <div className="absolute inset-0 flex items-center justify-center z-10" style={{ 
+            <div style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               backgroundColor: 'var(--surface)',
-              opacity: 0.95
+              opacity: 0.95,
+              zIndex: 10
             }}>
-              <div className="text-center">
+              <div style={{ textAlign: 'center' }}>
                 <svg
-                  className="animate-spin w-8 h-8 mx-auto mb-2 text-primary"
+                  className="animate-spin"
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    margin: '0 auto 8px',
+                    color: 'var(--accent)'
+                  }}
                   fill="none"
                   viewBox="0 0 24 24"
                 >
                   <circle
-                    className="opacity-25"
+                    style={{ opacity: 0.25 }}
                     cx="12"
                     cy="12"
                     r="10"
@@ -314,12 +306,12 @@ const SimplePreview = ({
                     strokeWidth="4"
                   ></circle>
                   <path
-                    className="opacity-75"
+                    style={{ opacity: 0.75 }}
                     fill="currentColor"
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                <p className="text-sm text-muted-foreground">
+                <p style={{ fontSize: '14px', color: 'var(--muted)' }}>
                   Rendering diagram...
                 </p>
               </div>
@@ -327,12 +319,26 @@ const SimplePreview = ({
           )}
           {/* Empty state overlay - Only shows inside preview panel */}
           {!content.trim() && (
-            <div className="absolute inset-0 flex items-center justify-center z-20" style={{ 
-              backgroundColor: 'var(--surface)'
+            <div style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--surface)',
+              zIndex: 20
             }}>
-              <div className="text-center text-muted-foreground">
+              <div style={{ textAlign: 'center', color: 'var(--muted)' }}>
                 <svg
-                  className="w-16 h-16 mx-auto mb-4 opacity-50"
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    margin: '0 auto 16px',
+                    opacity: 0.5
+                  }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -344,7 +350,7 @@ const SimplePreview = ({
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   ></path>
                 </svg>
-                <p className="text-sm">
+                <p style={{ fontSize: '14px' }}>
                   Start typing Mermaid syntax to see your diagram
                 </p>
               </div>
@@ -352,13 +358,26 @@ const SimplePreview = ({
           )}
           {/* Error state overlay - Only shows inside preview panel */}
           {hasError && content.trim() && (
-            <div className="absolute inset-0 flex items-center justify-center z-20" style={{ 
+            <div style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               backgroundColor: 'var(--surface)',
-              backdropFilter: 'blur(2px)'
+              zIndex: 20
             }}>
-              <div className="text-center">
+              <div style={{ textAlign: 'center' }}>
                 <svg
-                  className="w-16 h-16 mx-auto mb-4 text-red-500"
+                  style={{
+                    width: '64px',
+                    height: '64px',
+                    margin: '0 auto 16px',
+                    color: '#ff4444'
+                  }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -370,20 +389,23 @@ const SimplePreview = ({
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
                   ></path>
                 </svg>
-                <p className="text-sm text-red-600 font-medium">Syntax error in diagram</p>
-                <p className="text-xs text-red-500 mt-1">Check your Mermaid syntax</p>
+                <p style={{ fontSize: '14px', color: '#ff4444', fontWeight: 500 }}>Syntax error in diagram</p>
+                <p style={{ fontSize: '12px', color: '#ff6666', marginTop: '4px' }}>Check your Mermaid syntax</p>
               </div>
             </div>
           )}
           <div
             ref={containerRef}
-            className="w-full h-full p-4 overflow-auto"
-            data-testid="mermaid-preview-container"
             style={{
+              width: '100%',
+              height: '100%',
+              padding: '16px',
+              overflow: 'auto',
               fontFamily: "Arial, sans-serif",
               fontSize: "12px",
-              lineHeight: "1.4",
+              lineHeight: "1.4"
             }}
+            data-testid="mermaid-preview-container"
           />
         </div>
       </div>

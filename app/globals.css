@@ -698,6 +698,32 @@ html.light .mermaid .edgeLabel {
   font-weight: bold !important;
 }
 
+/* Ensure cursor remains visible and editor stays interactive during errors */
+.monaco-editor .error-line .cursor,
+.monaco-editor .error-line .cursors-layer,
+.monaco-editor.has-error .cursor,
+.monaco-editor.has-error .cursors-layer {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Prevent editor from becoming disabled during error state */
+.monaco-editor .view-lines,
+.monaco-editor .view-overlays {
+  pointer-events: auto !important;
+}
+
+/* Ensure cursor blinks even with error styling */
+.monaco-editor .cursor {
+  animation: monaco-cursor-blink 1s step-end infinite !important;
+}
+
+@keyframes monaco-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 /* Ensure proper scrolling in panels */
 .panel-scroll {
   overflow-y: auto;

@@ -328,6 +328,20 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
             hoverMessage: { value: errorMessage }
           }
         }]);
+        
+        // Ensure editor remains interactive after error
+        // Force cursor visibility and restore focus
+        setTimeout(() => {
+          if (editor && !editor.hasTextFocus()) {
+            editor.focus();
+          }
+          // Ensure cursor is visible by moving it
+          const position = editor.getPosition();
+          if (position) {
+            editor.setPosition(position);
+            editor.revealPositionInCenter(position);
+          }
+        }, 0);
       }
     } else if (editorRef.current && !errorMessage) {
       // Clear error markers when no error
@@ -336,6 +350,13 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
       if (model) {
         const existingDecorations = editor.getModel()?.getAllDecorations() || [];
         editor.deltaDecorations(existingDecorations.map((d: { id: string }) => d.id), []);
+        
+        // Restore focus when error is cleared
+        setTimeout(() => {
+          if (editor && !editor.hasTextFocus()) {
+            editor.focus();
+          }
+        }, 0);
       }
     }
   }, [errorMessage]);
@@ -379,6 +400,9 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
               contextmenu: true,
               smoothScrolling: true,
               overviewRulerBorder: false,
+              readOnly: false,
+              domReadOnly: false,
+              cursorSmoothCaretAnimation: 'on',
               scrollbar: {
                 vertical: 'auto',
                 horizontal: 'auto',

@@ -277,7 +277,7 @@ body {
 
 /* Editor scrolling fix for all screen sizes */
 .monaco-editor {
-  overflow: auto !important;
+  overflow: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   touch-action: pan-y !important;
 }
@@ -294,9 +294,9 @@ body {
   overflow: visible !important;
 }
 
-/* Ensure editor container allows scrolling */
+/* Ensure editor container has no scrollbars - Monaco handles scrolling internally */
 .monaco-editor-wrapper {
-  overflow: auto !important;
+  overflow: hidden !important;
   -webkit-overflow-scrolling: touch !important;
   height: 100% !important;
   touch-action: pan-y !important;
@@ -308,18 +308,18 @@ body {
 }
 
 .left > .panel.grow .monaco-editor-wrapper {
-  overflow: auto !important;
+  overflow: hidden !important;
   -webkit-overflow-scrolling: touch !important;
 }
 
 /* Additional fixes for medium and large screens */
 @media (min-width: 768px) {
   .monaco-editor {
-    overflow: auto !important;
+    overflow: hidden !important;
   }
   
   .monaco-editor-wrapper {
-    overflow: auto !important;
+    overflow: hidden !important;
     height: 100% !important;
   }
   
@@ -328,7 +328,7 @@ body {
   }
   
   .left > .panel.grow .monaco-editor-wrapper {
-    overflow: auto !important;
+    overflow: hidden !important;
   }
 }
 
@@ -342,16 +342,16 @@ body {
 .panel.grow .monaco-editor-wrapper {
   flex: 1 !important;
   min-height: 0 !important;
-  overflow: auto !important;
+  overflow: hidden !important;
 }
 
 /* Fix for Monaco Editor internal scrolling */
 .monaco-editor .overflow-guard {
-  overflow: auto !important;
+  overflow: hidden !important;
 }
 
 .monaco-editor .monaco-scrollable-element {
-  overflow: auto !important;
+  overflow: hidden !important;
 }
 
 /* Mobile viewport fix */
@@ -444,9 +444,49 @@ body {
   margin-left: 0 !important;
 }
 
-/* Additional spacing fixes */
+/* Additional spacing fixes - Monaco handles internal scrolling */
 .monaco-editor-container .monaco-editor .overflow-guard {
   overflow: hidden !important;
+}
+
+/* Hide external scrollbars on Monaco wrapper - Monaco has its own scrollbars */
+.monaco-editor-wrapper::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.monaco-editor-wrapper {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Hide Monaco Editor autocomplete/suggestion overlays */
+.monaco-editor .suggest-widget,
+.monaco-editor .parameter-hints-widget,
+.monaco-editor .editor-widget.suggest-widget,
+.monaco-editor .contentWidgets,
+.monaco-editor .overflowingContentWidgets,
+.monaco-editor .monaco-hover,
+.monaco-editor .monaco-editor-hover,
+.monaco-editor .suggest-details-container {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide all Monaco overlay widgets */
+.suggest-widget,
+.parameter-hints-widget,
+.monaco-hover,
+.monaco-editor-hover,
+.editor-widget,
+.contentWidgets > div,
+.overflowingContentWidgets > div {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
 }
 
 .monaco-editor-container .monaco-editor .monaco-editor-background {
@@ -772,11 +812,12 @@ main {
 /* Editor and preview panels - internal scroll only */
 .monaco-editor-wrapper {
   height: 100%;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
 .monaco-editor {
   height: 100% !important;
+  overflow: hidden !important;
 }
 
 /* Preview container - internal scroll only */
@@ -845,7 +886,7 @@ main {
   }
   
   .left > .panel.grow .monaco-editor-wrapper {
-    overflow: auto !important;
+    overflow: hidden !important;
     -webkit-overflow-scrolling: touch !important;
     height: 100% !important;
   }
@@ -943,7 +984,7 @@ main {
   }
   
   .left > .panel.grow .monaco-editor-wrapper {
-    overflow: auto !important;
+    overflow: hidden !important;
     -webkit-overflow-scrolling: touch !important;
   }
   
@@ -1019,7 +1060,7 @@ main {
   }
   
   .left > .panel.grow .monaco-editor-wrapper {
-    overflow: auto !important;
+    overflow: hidden !important;
     -webkit-overflow-scrolling: touch !important;
   }
   
@@ -1151,21 +1192,18 @@ main {
     background: transparent !important;
   }
   
-  /* Better scrollbars for preview and editor on mobile */
-  .preview::-webkit-scrollbar,
-  .monaco-editor-wrapper::-webkit-scrollbar {
+  /* Better scrollbars for preview on mobile - Monaco wrapper has no scrollbars */
+  .preview::-webkit-scrollbar {
     width: 6px !important;
     height: 6px !important;
   }
   
-  .preview::-webkit-scrollbar-thumb,
-  .monaco-editor-wrapper::-webkit-scrollbar-thumb {
+  .preview::-webkit-scrollbar-thumb {
     background: var(--muted) !important;
     border-radius: 3px !important;
   }
   
-  .preview::-webkit-scrollbar-track,
-  .monaco-editor-wrapper::-webkit-scrollbar-track {
+  .preview::-webkit-scrollbar-track {
     background: var(--surface) !important;
   }
   

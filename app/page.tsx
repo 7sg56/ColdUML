@@ -5,7 +5,7 @@ import Header from "../components/Header";
 import SimpleEditor, { SimpleEditorRef } from "../components/SimpleEditor";
 import UMLTemplates from "../components/UMLTemplates";
 import SimplePreview from "../components/SimplePreview";
-import { exportAsPNG, exportAsSVG, copyMermaidCode } from "../lib/export-utils";
+import { exportAsPNG, exportAsSVG } from "../lib/export-utils";
 import { toast } from "../lib/toast-utils";
 
 // Default UML content for initialization
@@ -71,15 +71,6 @@ function MermaidUMLEditor() {
     }
   }, [theme]);
 
-  const handleCopyCode = async () => {
-    const result = await copyMermaidCode(content);
-    if (result.success) {
-      toast.success("Code copied to clipboard");
-    } else {
-      toast.error(result.error || "Failed to copy code");
-    }
-  };
-
   const handleDownloadPNG = async () => {
     const result = await exportAsPNG(content);
     if (result.success) {
@@ -96,11 +87,6 @@ function MermaidUMLEditor() {
     } else {
       toast.error(result.error || "Failed to export SVG");
     }
-  };
-
-  const handleResetEditor = () => {
-    setContent(DEFAULT_UML_CONTENT);
-    toast.success("Editor reset to default content");
   };
 
   const handleEditorContentChange = (newContent: string) => {

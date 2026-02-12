@@ -90,7 +90,7 @@ const SimplePreview = ({
           </div>
         `;
       }
-    } catch (error) {
+    } catch {
       // If everything fails, show a simple placeholder
       if (containerRef.current) {
         containerRef.current.innerHTML = `
@@ -143,7 +143,7 @@ const SimplePreview = ({
             setIsInitialized(true);
           }
         }
-      } catch (error) {
+      } catch {
         // Suppress initialization errors completely
         if (isMounted) {
           // Silently fail - don't call onError

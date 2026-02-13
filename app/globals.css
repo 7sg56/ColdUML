@@ -1222,10 +1222,6 @@ main {
   }
 }
 
-/* Smooth theme transitions */
-* {
-  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
-}
 
 /* Responsive spacing utilities */
 .responsive-padding {

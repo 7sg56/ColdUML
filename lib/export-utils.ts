@@ -612,66 +612,14 @@ async function renderDiagramForExport(mermaidContent: string): Promise<SVGElemen
 }
 
 /**
- * Get Mermaid content from the editor
- */
-function getMermaidContent(): string | null {
-  // Try multiple methods to get the content
-  // Method 1: Try to find Monaco editor's model content
-  try {
-    // Access Monaco editor instance via window (if available)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const windowWithMonaco = window as any;
-    const monacoEditor = windowWithMonaco.monaco?.editor;
-    if (monacoEditor) {
-      // Try to find the editor instance
-      const editors = monacoEditor.getEditors();
-      if (editors && editors.length > 0) {
-        const model = editors[0]?.getModel();
-        if (model) {
-          return model.getValue();
-        }
-      }
-    }
-  } catch {
-    // Ignore errors
-  }
-
-  // Method 2: Try to get from Monaco editor textarea (fallback)
-  const editorTextarea = document.querySelector('.monaco-editor textarea[data-mprt="6"]') as HTMLTextAreaElement;
-  if (!editorTextarea) {
-    // Try alternative selector
-    const altTextarea = document.querySelector('.monaco-editor textarea') as HTMLTextAreaElement;
-    if (altTextarea && altTextarea.value) {
-      return altTextarea.value;
-    }
-  } else if (editorTextarea.value) {
-    return editorTextarea.value;
-  }
-
-  // Method 3: Try to get from any visible textarea in the editor container
-  const editorContainer = document.querySelector('.monaco-editor-wrapper, .monaco-editor-container');
-  if (editorContainer) {
-    const textareas = editorContainer.querySelectorAll('textarea');
-    for (const textarea of Array.from(textareas)) {
-      if (textarea.value && textarea.value.trim()) {
-        return textarea.value;
-      }
-    }
-  }
-  
-  return null;
-}
-
-/**
  * Export diagram as SVG
  * Always exports with light theme for better visibility
  */
-export async function exportAsSVG(mermaidContent?: string): Promise<ExportResult> {
+export async function exportAsSVG(mermaidContent: string): Promise<ExportResult> {
   try {
     
-    // Get Mermaid content if not provided
-    const content = mermaidContent || getMermaidContent();
-    if (!content || !content.trim()) {
+    // Check Mermaid content
+    if (!mermaidContent || !mermaidContent.trim()) {
       return {
         success: false,
         error: 'No diagram content found to export. Please ensure the editor has valid Mermaid syntax.'
@@ -679,7 +627,7 @@ export async function exportAsSVG(mermaidContent?: string): Promise<ExportResult
     }
     
     // Render diagram with light theme for export
-    const svg = await renderDiagramForExport(content.trim());
+    const svg = await renderDiagramForExport(mermaidContent.trim());
     if (!svg) {
       return {
         success: false,
@@ -745,12 +693,11 @@ export async function exportAsSVG(mermaidContent?: string): Promise<ExportResult
  * Export diagram as PNG
  * Always exports with light theme for better visibility
  */
-export async function exportAsPNG(mermaidContent?: string): Promise<ExportResult> {
+export async function exportAsPNG(mermaidContent: string): Promise<ExportResult> {
   try {
     
-    // Get Mermaid content if not provided
-    const content = mermaidContent || getMermaidContent();
-    if (!content || !content.trim()) {
+    // Check Mermaid content
+    if (!mermaidContent || !mermaidContent.trim()) {
       return {
         success: false,
         error: 'No diagram content found to export. Please ensure the editor has valid Mermaid syntax.'
@@ -758,7 +705,7 @@ export async function exportAsPNG(mermaidContent?: string): Promise<ExportResult
     }
     
     // Render diagram with light theme for export
-    const svg = await renderDiagramForExport(content.trim());
+    const svg = await renderDiagramForExport(mermaidContent.trim());
     if (!svg) {
       return {
         success: false,

@@ -3,6 +3,7 @@
 import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { FiCopy, FiRotateCcw } from 'react-icons/fi';
+import { MERMAID_LIGHT_THEME, MERMAID_DARK_THEME } from '@/lib/monaco-themes';
 import { toast } from "../lib/toast-utils";
 
 interface SimpleEditorProps {
@@ -102,71 +103,8 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     });
 
     // Define Vercel themes
-    monaco.editor.defineTheme('mermaid-light', {
-      base: 'vs',
-      inherit: true,
-      rules: [
-        { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
-        { token: 'keyword', foreground: 'd73a49', fontStyle: 'bold' },
-        { token: 'operator', foreground: '24292e' },
-        { token: 'identifier', foreground: '24292e' },
-        { token: 'string', foreground: '032f62' },
-        { token: 'number', foreground: '005cc5' },
-        { token: 'bracket', foreground: '24292e' },
-        { token: 'delimiter', foreground: '24292e' }
-      ],
-      colors: {
-        'editor.background': '#ffffff',
-        'editor.foreground': '#24292e',
-        'editorLineNumber.foreground': '#6a737d',
-        'editorLineNumber.activeForeground': '#24292e',
-        'editor.selectionBackground': '#0070f340',
-        'editor.selectionForeground': '#24292e',
-        'editor.inactiveSelectionBackground': '#0070f320',
-        'editor.selectionHighlightBackground': '#0070f320',
-        'editor.wordHighlightBackground': '#0070f315',
-        'editor.wordHighlightStrongBackground': '#0070f325',
-        'editor.findMatchBackground': '#0070f340',
-        'editor.findMatchHighlightBackground': '#0070f320',
-        'editorCursor.foreground': '#24292e',
-        'editorWhitespace.foreground': '#d0d7de',
-        'editorIndentGuide.background': '#d0d7de',
-        'editorIndentGuide.activeBackground': '#6a737d'
-      }
-    });
-
-    monaco.editor.defineTheme('mermaid-dark', {
-      base: 'vs-dark',
-      inherit: true,
-      rules: [
-        { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
-        { token: 'keyword', foreground: '79b8ff', fontStyle: 'bold' },
-        { token: 'operator', foreground: '79b8ff' },
-        { token: 'identifier', foreground: 'f0f6fc' },
-        { token: 'string', foreground: '9ecbff' },
-        { token: 'number', foreground: '79b8ff' },
-        { token: 'bracket', foreground: 'f0f6fc' },
-        { token: 'delimiter', foreground: 'f0f6fc' }
-      ],
-      colors: {
-        'editor.background': '#0d1117',
-        'editor.foreground': '#f0f6fc',
-        'editorLineNumber.foreground': '#7d8590',
-        'editorLineNumber.activeForeground': '#f0f6fc',
-        'editor.selectionBackground': '#0070f350',
-        'editor.selectionForeground': '#ffffff',
-        'editor.inactiveSelectionBackground': '#0070f330',
-        'editor.selectionHighlightBackground': '#0070f330',
-        'editor.wordHighlightBackground': '#0070f320',
-        'editor.wordHighlightStrongBackground': '#0070f340',
-        'editor.findMatchBackground': '#0070f350',
-        'editor.findMatchHighlightBackground': '#0070f330',
-        'editorCursor.foreground': '#f0f6fc',
-        'editorWhitespace.foreground': '#7d8590',
-        'editorIndentGuide.background': '#21262d',
-        'editorIndentGuide.activeBackground': '#7d8590'
-      }
-    });
+    monaco.editor.defineTheme('mermaid-light', MERMAID_LIGHT_THEME);
+    monaco.editor.defineTheme('mermaid-dark', MERMAID_DARK_THEME);
 
     // Apply theme immediately
     monaco.editor.setTheme(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
@@ -225,75 +163,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     if (editorRef.current && typeof window !== 'undefined') {
       const monaco = (window as any).monaco; // eslint-disable-line @typescript-eslint/no-explicit-any
       if (monaco && monaco.editor) {
-        // Ensure themes are defined before setting
-        if (theme === 'dark') {
-          monaco.editor.defineTheme('mermaid-dark', {
-            base: 'vs-dark',
-            inherit: true,
-            rules: [
-              { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
-              { token: 'keyword', foreground: '79b8ff', fontStyle: 'bold' },
-              { token: 'operator', foreground: '79b8ff' },
-              { token: 'identifier', foreground: 'f0f6fc' },
-              { token: 'string', foreground: '9ecbff' },
-              { token: 'number', foreground: '79b8ff' },
-              { token: 'bracket', foreground: 'f0f6fc' },
-              { token: 'delimiter', foreground: 'f0f6fc' }
-            ],
-            colors: {
-              'editor.background': '#0d1117',
-              'editor.foreground': '#f0f6fc',
-              'editorLineNumber.foreground': '#7d8590',
-              'editorLineNumber.activeForeground': '#f0f6fc',
-              'editor.selectionBackground': '#0070f350',
-              'editor.selectionForeground': '#ffffff',
-              'editor.inactiveSelectionBackground': '#0070f330',
-              'editor.selectionHighlightBackground': '#0070f330',
-              'editor.wordHighlightBackground': '#0070f320',
-              'editor.wordHighlightStrongBackground': '#0070f340',
-              'editor.findMatchBackground': '#0070f350',
-              'editor.findMatchHighlightBackground': '#0070f330',
-              'editorCursor.foreground': '#f0f6fc',
-              'editorWhitespace.foreground': '#7d8590',
-              'editorIndentGuide.background': '#21262d',
-              'editorIndentGuide.activeBackground': '#7d8590'
-            }
-          });
-        } else {
-          monaco.editor.defineTheme('mermaid-light', {
-            base: 'vs',
-            inherit: true,
-            rules: [
-              { token: 'comment', foreground: '6a737d', fontStyle: 'italic' },
-              { token: 'keyword', foreground: 'd73a49', fontStyle: 'bold' },
-              { token: 'operator', foreground: '24292e' },
-              { token: 'identifier', foreground: '24292e' },
-              { token: 'string', foreground: '032f62' },
-              { token: 'number', foreground: '005cc5' },
-              { token: 'bracket', foreground: '24292e' },
-              { token: 'delimiter', foreground: '24292e' }
-            ],
-            colors: {
-              'editor.background': '#ffffff',
-              'editor.foreground': '#24292e',
-              'editorLineNumber.foreground': '#6a737d',
-              'editorLineNumber.activeForeground': '#24292e',
-              'editor.selectionBackground': '#0070f340',
-              'editor.selectionForeground': '#24292e',
-              'editor.inactiveSelectionBackground': '#0070f320',
-              'editor.selectionHighlightBackground': '#0070f320',
-              'editor.wordHighlightBackground': '#0070f315',
-              'editor.wordHighlightStrongBackground': '#0070f325',
-              'editor.findMatchBackground': '#0070f340',
-              'editor.findMatchHighlightBackground': '#0070f320',
-              'editorCursor.foreground': '#24292e',
-              'editorWhitespace.foreground': '#d0d7de',
-              'editorIndentGuide.background': '#d0d7de',
-              'editorIndentGuide.activeBackground': '#6a737d'
-            }
-          });
-        }
-        
+        // Themes are already defined in handleEditorDidMount
         monaco.editor.setTheme(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
       }
     }

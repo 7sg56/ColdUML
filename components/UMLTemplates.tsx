@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { FiBox, FiActivity, FiShuffle, FiArrowRight } from 'react-icons/fi';
 
 export interface UMLTemplate {
@@ -100,7 +100,7 @@ const UML_TEMPLATES: UMLTemplate[] = [
   },
 ];
 
-export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
+export default memo(function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
   const [activeTemplate, setActiveTemplate] = useState<string | null>(null);
 
   const handleTemplateClick = (template: UMLTemplate) => {
@@ -163,4 +163,4 @@ export default function UMLTemplates({ onInsertTemplate }: UMLTemplatesProps) {
       </div>
     </div>
   );
-}
+});

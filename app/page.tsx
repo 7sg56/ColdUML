@@ -103,13 +103,11 @@ function MermaidUMLEditor() {
   const handleRenderError = (error: string) => {
     // Set error message for editor display
     setErrorMessage(error);
-    console.warn('Render error:', error);
   };
 
   const handleRenderSuccess = () => {
     // Clear error message on successful render
     setErrorMessage(null);
-    console.log('Render success');
   };
 
   // Show loading screen until theme is ready

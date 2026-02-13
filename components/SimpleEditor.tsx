@@ -4,6 +4,7 @@ import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { FiCopy, FiRotateCcw } from 'react-icons/fi';
 import { MERMAID_LIGHT_THEME, MERMAID_DARK_THEME } from '@/lib/monaco-themes';
+import { toast } from "../lib/toast-utils";
 
 interface SimpleEditorProps {
   content: string;
@@ -123,10 +124,9 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
   const handleCopyCode = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(content);
-      // You can add a toast notification here if needed
-      console.log('Code copied to clipboard');
+      toast.success('Code copied to clipboard');
     } catch (error) {
-      console.error('Failed to copy code:', error);
+      toast.error('Failed to copy code');
     }
   }, [content]);
 

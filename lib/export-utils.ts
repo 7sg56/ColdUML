@@ -668,7 +668,6 @@ function getMermaidContent(): string | null {
  */
 export async function exportAsSVG(mermaidContent?: string): Promise<ExportResult> {
   try {
-    console.log('Starting SVG export with light theme...');
     
     // Get Mermaid content if not provided
     const content = mermaidContent || getMermaidContent();
@@ -697,7 +696,6 @@ export async function exportAsSVG(mermaidContent?: string): Promise<ExportResult
       };
     }
     
-    console.log('SVG rendered with light theme, preparing for export...');
     const svgString = prepareSVGForExport(svg);
     const filename = generateFilename('svg');
     
@@ -706,7 +704,6 @@ export async function exportAsSVG(mermaidContent?: string): Promise<ExportResult
       
       try {
         await downloadBlob(blob, filename);
-        console.log('SVG export completed successfully');
         return {
           success: true,
           filename
@@ -750,7 +747,6 @@ export async function exportAsSVG(mermaidContent?: string): Promise<ExportResult
  */
 export async function exportAsPNG(mermaidContent?: string): Promise<ExportResult> {
   try {
-    console.log('Starting PNG export with light theme...');
     
     // Get Mermaid content if not provided
     const content = mermaidContent || getMermaidContent();
@@ -779,7 +775,6 @@ export async function exportAsPNG(mermaidContent?: string): Promise<ExportResult
       };
     }
     
-    console.log('SVG rendered with light theme, converting to PNG...');
     const svgString = prepareSVGForExport(svg);
     const filename = generateFilename('png');
     
@@ -788,7 +783,6 @@ export async function exportAsPNG(mermaidContent?: string): Promise<ExportResult
       
       try {
         await downloadBlob(pngBlob, filename);
-        console.log('PNG export completed successfully');
         return {
           success: true,
           filename

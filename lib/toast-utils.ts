@@ -110,8 +110,7 @@ function createToastElement(toast: Toast): HTMLElement {
         ${getToastIcon(toast.type)}
       </div>
       <div class="ml-3 flex-1 min-w-0">
-        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
-          ${toast.message}
+        <p class="text-sm font-medium text-gray-900 dark:text-gray-100" data-toast-message>
         </p>
       </div>
       <div class="ml-4 flex-shrink-0 flex">
@@ -124,6 +123,11 @@ function createToastElement(toast: Toast): HTMLElement {
       </div>
     </div>
   `;
+
+  const messageElement = toastElement.querySelector('[data-toast-message]');
+  if (messageElement) {
+    messageElement.textContent = toast.message;
+  }
   
   // Add animation classes
   toastElement.style.transform = 'translateX(100%)';

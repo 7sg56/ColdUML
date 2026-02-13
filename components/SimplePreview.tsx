@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { FiDownload } from 'react-icons/fi';
+import DOMPurify from 'dompurify';
 
 interface SimplePreviewProps {
   content: string;
@@ -67,7 +68,14 @@ const SimplePreview = ({
       }
 
       if (renderResult && renderResult.svg && containerRef.current) {
-        containerRef.current.innerHTML = renderResult.svg;
+        // Sanitize the SVG to prevent XSS
+        const cleanSvg = DOMPurify.sanitize(renderResult.svg, {
+          USE_PROFILES: { svg: true, html: true },
+          ADD_TAGS: ["foreignObject"],
+          ADD_ATTR: ["target"]
+        });
+
+        containerRef.current.innerHTML = cleanSvg;
         
         // Apply basic styling
         const svgElement = containerRef.current.querySelector("svg");

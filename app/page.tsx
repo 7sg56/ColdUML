@@ -7,30 +7,7 @@ import UMLTemplates from "../components/UMLTemplates";
 import SimplePreview from "../components/SimplePreview";
 import { exportAsPNG, exportAsSVG } from "../lib/export-utils";
 import { toast } from "../lib/toast-utils";
-
-// Default UML content for initialization
-const DEFAULT_UML_CONTENT = `classDiagram
-    class Animal {
-        +String name
-        +int age
-        +makeSound()
-        +move()
-    }
-    
-    class Dog {
-        +String breed
-        +bark()
-        +wagTail()
-    }
-    
-    class Cat {
-        +String color
-        +meow()
-        +purr()
-    }
-    
-    Animal <|-- Dog
-    Animal <|-- Cat`;
+import { DEFAULT_UML_CONTENT } from "../lib/constants";
 
 // Get initial theme synchronously to prevent flash
 function getInitialTheme(): 'light' | 'dark' {

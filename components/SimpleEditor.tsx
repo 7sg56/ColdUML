@@ -3,6 +3,7 @@
 import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { FiCopy, FiRotateCcw } from 'react-icons/fi';
+import { DEFAULT_UML_CONTENT } from '../lib/constants';
 
 interface SimpleEditorProps {
   content: string;
@@ -194,30 +195,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
 
   // Reset editor to default content
   const handleResetEditor = useCallback(() => {
-    const defaultContent = `classDiagram
-    class Animal {
-        +String name
-        +int age
-        +makeSound()
-        +move()
-    }
-    
-    class Dog {
-        +String breed
-        +bark()
-        +wagTail()
-    }
-    
-    class Cat {
-        +String color
-        +meow()
-        +purr()
-    }
-    
-    Animal <|-- Dog
-    Animal <|-- Cat`;
-    
-    onChange(defaultContent);
+    onChange(DEFAULT_UML_CONTENT);
   }, [onChange]);
 
   // Update theme when it changes

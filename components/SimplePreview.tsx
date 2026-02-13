@@ -147,7 +147,6 @@ const SimplePreview = ({
         // Suppress initialization errors completely
         if (isMounted) {
           // Silently fail - don't call onError
-          console.warn("Mermaid initialization failed, but continuing silently");
         }
       }
     };

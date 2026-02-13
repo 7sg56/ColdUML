@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import Header from "../components/Header";
 import SimpleEditor, { SimpleEditorRef } from "../components/SimpleEditor";
 import UMLTemplates from "../components/UMLTemplates";
@@ -93,12 +93,12 @@ function MermaidUMLEditor() {
     setContent(newContent);
   };
 
-  const handleInsertTemplate = (template: string) => {
+  const handleInsertTemplate = useCallback((template: string) => {
     // Simple template insertion using the editor's built-in method
     if (editorRef.current) {
       editorRef.current.insertTemplate(template);
     }
-  };
+  }, []);
 
   const handleRenderError = (error: string) => {
     // Set error message for editor display

@@ -178,7 +178,7 @@ function MermaidUMLEditor() {
               onSuccess={handleRenderSuccess}
               onDownloadPNG={handleDownloadPNG}
               onDownloadSVG={handleDownloadSVG}
-              hasError={!!errorMessage}
+              errorMessage={errorMessage}
             />
           </div>
         </section>

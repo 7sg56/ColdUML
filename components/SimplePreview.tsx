@@ -10,7 +10,7 @@ interface SimplePreviewProps {
   onSuccess: () => void;
   onDownloadPNG?: () => void;
   onDownloadSVG?: () => void;
-  hasError?: boolean;
+  errorMessage?: string | null;
 }
 
 const SimplePreview = ({
@@ -20,7 +20,7 @@ const SimplePreview = ({
   onSuccess,
   onDownloadPNG,
   onDownloadSVG,
-  hasError = false,
+  errorMessage = null,
 }: SimplePreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -250,7 +250,7 @@ const SimplePreview = ({
               ></path>
             </svg>
           )}
-          {onDownloadPNG && !hasError && (
+          {onDownloadPNG && !errorMessage && (
             <button className="icon-btn" title="Download PNG" aria-label="Download PNG" onClick={onDownloadPNG}>
               <div className="flex items-center gap-1">
                 <FiDownload size={16} />
@@ -258,7 +258,7 @@ const SimplePreview = ({
               </div>
             </button>
           )}
-          {onDownloadSVG && !hasError && (
+          {onDownloadSVG && !errorMessage && (
             <button className="icon-btn" title="Download SVG" aria-label="Download SVG" onClick={onDownloadSVG}>
               <div className="flex items-center gap-1">
                 <FiDownload size={16} />
@@ -356,7 +356,7 @@ const SimplePreview = ({
             </div>
           )}
           {/* Error state overlay - Only shows inside preview panel */}
-          {hasError && content.trim() && (
+          {errorMessage && content.trim() && (
             <div style={{ 
               position: 'absolute',
               top: 0,
@@ -369,7 +369,7 @@ const SimplePreview = ({
               backgroundColor: 'var(--surface)',
               zIndex: 20
             }}>
-              <div style={{ textAlign: 'center' }}>
+              <div style={{ textAlign: 'center', maxWidth: '80%', padding: '0 20px' }}>
                 <svg
                   style={{
                     width: '64px',
@@ -389,7 +389,7 @@ const SimplePreview = ({
                   ></path>
                 </svg>
                 <p style={{ fontSize: '14px', color: '#ff4444', fontWeight: 500 }}>Syntax error in diagram</p>
-                <p style={{ fontSize: '12px', color: '#ff6666', marginTop: '4px' }}>Check your Mermaid syntax</p>
+                <p style={{ fontSize: '12px', color: '#ff6666', marginTop: '4px' }}>{errorMessage}</p>
               </div>
             </div>
           )}

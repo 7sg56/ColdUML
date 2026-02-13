@@ -55,29 +55,6 @@ function prepareSVGForExport(svg: SVGElement): string {
     }
   });
   
-  // Copy computed styles to inline styles for better export compatibility
-  const allElements = clonedSvg.querySelectorAll('*');
-  allElements.forEach((element) => {
-    const computedStyle = window.getComputedStyle(element as Element);
-    const inlineStyle = element.getAttribute('style') || '';
-    
-    // Add important style properties
-    const importantStyles = ['fill', 'stroke', 'font-family', 'font-size', 'font-weight'];
-    const styleUpdates: string[] = [];
-    
-    importantStyles.forEach(prop => {
-      const value = computedStyle.getPropertyValue(prop);
-      if (value && value !== 'none') {
-        styleUpdates.push(`${prop}: ${value}`);
-      }
-    });
-    
-    if (styleUpdates.length > 0) {
-      const newStyle = inlineStyle + '; ' + styleUpdates.join('; ');
-      element.setAttribute('style', newStyle);
-    }
-  });
-  
   return new XMLSerializer().serializeToString(clonedSvg);
 }
 

@@ -326,7 +326,7 @@ async function renderDiagramForExport(mermaidContent: string): Promise<SVGElemen
       mermaid.default.initialize({
         theme: 'default', // Always use light theme for exports
         startOnLoad: false,
-        securityLevel: 'loose',
+        securityLevel: 'strict',
         fontFamily: 'Arial, sans-serif',
         fontSize: 10,
         themeVariables: {

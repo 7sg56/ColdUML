@@ -16,6 +16,14 @@ const TEMPLATES = {
   aggregation: 'ClassA o-- ClassB'
 };
 
+const TEMPLATE_BUTTONS = [
+  { label: 'New Class', template: TEMPLATES.newClass },
+  { label: 'Inheritance', template: TEMPLATES.inheritance },
+  { label: 'Association', template: TEMPLATES.association },
+  { label: 'Composition', template: TEMPLATES.composition },
+  { label: 'Aggregation', template: TEMPLATES.aggregation },
+];
+
 export default function SimpleTemplates({ onInsert }: TemplateProps) {
   const handleInsert = (template: string) => {
     onInsert(template);
@@ -30,40 +38,15 @@ export default function SimpleTemplates({ onInsert }: TemplateProps) {
       </div>
       
       <div className="space-y-2">
-        <button
-          onClick={() => handleInsert(TEMPLATES.newClass)}
-          className="w-full px-3 py-2 text-sm bg-button-background hover:bg-button-hover border border-border rounded-md text-left transition-colors text-foreground"
-        >
-          New Class
-        </button>
-        
-        <button
-          onClick={() => handleInsert(TEMPLATES.inheritance)}
-          className="w-full px-3 py-2 text-sm bg-button-background hover:bg-button-hover border border-border rounded-md text-left transition-colors text-foreground"
-        >
-          Inheritance
-        </button>
-        
-        <button
-          onClick={() => handleInsert(TEMPLATES.association)}
-          className="w-full px-3 py-2 text-sm bg-button-background hover:bg-button-hover border border-border rounded-md text-left transition-colors text-foreground"
-        >
-          Association
-        </button>
-        
-        <button
-          onClick={() => handleInsert(TEMPLATES.composition)}
-          className="w-full px-3 py-2 text-sm bg-button-background hover:bg-button-hover border border-border rounded-md text-left transition-colors text-foreground"
-        >
-          Composition
-        </button>
-        
-        <button
-          onClick={() => handleInsert(TEMPLATES.aggregation)}
-          className="w-full px-3 py-2 text-sm bg-button-background hover:bg-button-hover border border-border rounded-md text-left transition-colors text-foreground"
-        >
-          Aggregation
-        </button>
+        {TEMPLATE_BUTTONS.map((btn) => (
+          <button
+            key={btn.label}
+            onClick={() => handleInsert(btn.template)}
+            className="w-full px-3 py-2 text-sm bg-button-background hover:bg-button-hover border border-border rounded-md text-left transition-colors text-foreground"
+          >
+            {btn.label}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState, memo } from 'react';
 import { FiBox, FiActivity, FiShuffle, FiArrowRight } from 'react-icons/fi';
+import { DEFAULT_UML_CONTENT } from '@/lib/constants';
 
 export interface UMLTemplate {
   id: string;
@@ -24,28 +25,7 @@ const UML_TEMPLATES: UMLTemplate[] = [
     type: 'Class Diagram',
     description: 'Object-oriented class relationships and inheritance',
     icon: <FiBox size={12} />,
-    code: `classDiagram
-    class Animal {
-        +String name
-        +int age
-        +makeSound()
-        +move()
-    }
-    
-    class Dog {
-        +String breed
-        +bark()
-        +wagTail()
-    }
-    
-    class Cat {
-        +String color
-        +meow()
-        +purr()
-    }
-    
-    Animal <|-- Dog
-    Animal <|-- Cat`
+    code: DEFAULT_UML_CONTENT
   },
   {
     id: 'sequence-diagram',

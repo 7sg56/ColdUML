@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
-import { FiDownload } from 'react-icons/fi';
+import { FiDownload, FiFileText, FiAlertTriangle } from 'react-icons/fi';
+import PreviewOverlay from "./PreviewOverlay";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface SimplePreviewProps {
   content: string;
@@ -23,8 +25,10 @@ const SimplePreview = ({
   errorMessage = null,
 }: SimplePreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mermaidRef = useRef<typeof import("mermaid") | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
+  const [systemError, setSystemError] = useState(false);
 
   // Define renderDiagram function with useCallback for proper dependency management
   const renderDiagram = useCallback(async () => {
@@ -40,13 +44,20 @@ const SimplePreview = ({
 
     const diagramContent = content.trim();
     setIsRendering(true);
+    setSystemError(false);
 
     try {
       // Clear previous content
       containerRef.current.innerHTML = "";
 
-      // Dynamic import to ensure Mermaid is available
-      const mermaid = await import("mermaid");
+      // Get mermaid instance
+      let mermaid;
+      if (mermaidRef.current) {
+        mermaid = mermaidRef.current;
+      } else {
+        mermaid = await import("mermaid");
+        mermaidRef.current = mermaid;
+      }
 
       // Generate unique ID for this render
       const diagramId = `mermaid-diagram-${Date.now()}`;
@@ -79,31 +90,11 @@ const SimplePreview = ({
         }
       } else {
         // If everything fails, show a simple placeholder
-        containerRef.current.innerHTML = `
-          <div class="flex items-center justify-center h-full p-6">
-            <div class="text-center text-muted-foreground">
-              <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-              <p class="text-sm">Diagram preview</p>
-            </div>
-          </div>
-        `;
+        setSystemError(true);
       }
     } catch {
       // If everything fails, show a simple placeholder
-      if (containerRef.current) {
-        containerRef.current.innerHTML = `
-          <div class="flex items-center justify-center h-full p-6">
-            <div class="text-center text-muted-foreground">
-              <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-              </svg>
-              <p class="text-sm">Diagram preview</p>
-            </div>
-          </div>
-        `;
-      }
+      setSystemError(true);
     } finally {
       setIsRendering(false);
     }
@@ -121,11 +112,13 @@ const SimplePreview = ({
           const mermaid = await import("mermaid");
 
           if (isMounted) {
+            mermaidRef.current = mermaid;
+
             // Initialize with Vercel theme config
             mermaid.default.initialize({
               theme: theme === "dark" ? "dark" : "default",
               startOnLoad: false,
-              securityLevel: "loose",
+              securityLevel: "strict",
               fontFamily: "Arial, sans-serif",
               fontSize: 10,
               themeVariables: {
@@ -161,7 +154,7 @@ const SimplePreview = ({
   // Re-initialize when theme changes
   useEffect(() => {
     if (isInitialized && typeof window !== "undefined") {
-      import("mermaid").then((mermaid) => {
+      const applyTheme = (mermaid: typeof import("mermaid")) => {
         // Clear any existing diagrams first
         if (containerRef.current) {
           containerRef.current.innerHTML = "";
@@ -170,7 +163,7 @@ const SimplePreview = ({
         mermaid.default.initialize({
           theme: theme === "dark" ? "dark" : "default",
           startOnLoad: false,
-          securityLevel: "loose",
+          securityLevel: "strict",
           fontFamily: "Arial, sans-serif",
           fontSize: 10,
           themeVariables: {
@@ -184,7 +177,16 @@ const SimplePreview = ({
             tertiaryColor: theme === "dark" ? "#000000" : "#ffffff"
           }
         });
-      });
+      };
+
+      if (mermaidRef.current) {
+        applyTheme(mermaidRef.current);
+      } else {
+        import("mermaid").then((mermaid) => {
+          mermaidRef.current = mermaid;
+          applyTheme(mermaid);
+        });
+      }
     }
   }, [theme, isInitialized]);
 
@@ -230,25 +232,7 @@ const SimplePreview = ({
         <div className="panel-title">Preview</div>
         <div className="panel-actions">
           {isRendering && (
-            <svg
-              className="animate-spin w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
+             <LoadingSpinner className="w-4 h-4" />
           )}
           {onDownloadPNG && !errorMessage && (
             <button className="icon-btn" title="Download PNG" aria-label="Download PNG" onClick={onDownloadPNG}>
@@ -269,141 +253,50 @@ const SimplePreview = ({
         </div>
       </div>
       <div className="panel-body">
-        <div className="preview" style={{ position: 'relative' }}>
+        <div className="preview relative">
           {isRendering && (
-            <div style={{ 
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'var(--surface)',
-              opacity: 0.95,
-              zIndex: 10
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <svg
-                  className="animate-spin"
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    margin: '0 auto 8px',
-                    color: 'var(--accent)'
-                  }}
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    style={{ opacity: 0.25 }}
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    style={{ opacity: 0.75 }}
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                <p style={{ fontSize: '14px', color: 'var(--muted)' }}>
+            <PreviewOverlay className="opacity-95 z-10">
+              <div className="text-center">
+                <LoadingSpinner className="w-8 h-8 mx-auto mb-2 text-[var(--accent)]" />
+                <p className="text-sm text-[var(--muted)]">
                   Rendering diagram...
                 </p>
               </div>
-            </div>
+            </PreviewOverlay>
           )}
           {/* Empty state overlay - Only shows inside preview panel */}
           {!content.trim() && (
-            <div style={{ 
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'var(--surface)',
-              zIndex: 20
-            }}>
-              <div style={{ textAlign: 'center', color: 'var(--muted)' }}>
-                <svg
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    margin: '0 auto 16px',
-                    opacity: 0.5
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  ></path>
-                </svg>
-                <p style={{ fontSize: '14px' }}>
+            <PreviewOverlay className="z-20">
+              <div className="text-center text-[var(--muted)]">
+                <FiFileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p className="text-sm">
                   Start typing Mermaid syntax to see your diagram
                 </p>
               </div>
-            </div>
+            </PreviewOverlay>
+          )}
+          {/* System Error overlay */}
+          {systemError && (
+             <PreviewOverlay className="z-20">
+               <div className="text-center text-[var(--muted)]">
+                 <FiFileText className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                 <p className="text-sm">Diagram preview</p>
+               </div>
+             </PreviewOverlay>
           )}
           {/* Error state overlay - Only shows inside preview panel */}
           {errorMessage && content.trim() && (
-            <div style={{ 
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: 'var(--surface)',
-              zIndex: 20
-            }}>
-              <div style={{ textAlign: 'center', maxWidth: '80%', padding: '0 20px' }}>
-                <svg
-                  style={{
-                    width: '64px',
-                    height: '64px',
-                    margin: '0 auto 16px',
-                    color: '#ff4444'
-                  }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
-                  ></path>
-                </svg>
-                <p style={{ fontSize: '14px', color: '#ff4444', fontWeight: 500 }}>Syntax error in diagram</p>
-                <p style={{ fontSize: '12px', color: '#ff6666', marginTop: '4px' }}>{errorMessage}</p>
+            <PreviewOverlay className="z-20">
+              <div className="text-center max-w-[80%] px-5">
+                <FiAlertTriangle className="w-16 h-16 mx-auto mb-4 text-[#ff4444]" />
+                <p className="text-sm font-medium text-[#ff4444]">Syntax error in diagram</p>
+                <p className="text-xs text-[#ff6666] mt-1">{errorMessage}</p>
               </div>
-            </div>
+            </PreviewOverlay>
           )}
           <div
             ref={containerRef}
-            style={{
-              width: '100%',
-              height: '100%',
-              padding: '16px',
-              overflow: 'auto',
-              fontFamily: "Arial, sans-serif",
-              fontSize: "12px",
-              lineHeight: "1.4"
-            }}
+            className="w-full h-full p-4 overflow-auto font-sans text-xs leading-[1.4]"
             data-testid="mermaid-preview-container"
           />
         </div>

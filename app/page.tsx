@@ -7,30 +7,7 @@ import UMLTemplates from "../components/UMLTemplates";
 import SimplePreview from "../components/SimplePreview";
 import { exportAsPNG, exportAsSVG } from "../lib/export-utils";
 import { toast } from "../lib/toast-utils";
-
-// Default UML content for initialization
-const DEFAULT_UML_CONTENT = `classDiagram
-    class Animal {
-        +String name
-        +int age
-        +makeSound()
-        +move()
-    }
-    
-    class Dog {
-        +String breed
-        +bark()
-        +wagTail()
-    }
-    
-    class Cat {
-        +String color
-        +meow()
-        +purr()
-    }
-    
-    Animal <|-- Dog
-    Animal <|-- Cat`;
+import { DEFAULT_UML_CONTENT } from "@/lib/constants";
 
 // Get initial theme synchronously to prevent flash
 function getInitialTheme(): 'light' | 'dark' {
@@ -71,23 +48,18 @@ function MermaidUMLEditor() {
     }
   }, [theme]);
 
-  const handleDownloadPNG = async () => {
-    const result = await exportAsPNG(content);
+  const handleExport = async (exportFn: (content: string) => Promise<{ success: boolean; error?: string }>, format: string) => {
+    const result = await exportFn(content);
     if (result.success) {
-      toast.success("PNG exported successfully");
+      toast.success(`${format} exported successfully`);
     } else {
-      toast.error(result.error || "Failed to export PNG");
+      toast.error(result.error || `Failed to export ${format}`);
     }
   };
 
-  const handleDownloadSVG = async () => {
-    const result = await exportAsSVG(content);
-    if (result.success) {
-      toast.success("SVG exported successfully");
-    } else {
-      toast.error(result.error || "Failed to export SVG");
-    }
-  };
+  const handleDownloadPNG = () => handleExport(exportAsPNG, "PNG");
+
+  const handleDownloadSVG = () => handleExport(exportAsSVG, "SVG");
 
   const handleEditorContentChange = (newContent: string) => {
     setContent(newContent);
@@ -100,15 +72,15 @@ function MermaidUMLEditor() {
     }
   }, []);
 
-  const handleRenderError = (error: string) => {
+  const handleRenderError = useCallback((error: string) => {
     // Set error message for editor display
     setErrorMessage(error);
-  };
+  }, []);
 
-  const handleRenderSuccess = () => {
+  const handleRenderSuccess = useCallback(() => {
     // Clear error message on successful render
     setErrorMessage(null);
-  };
+  }, []);
 
   // Show loading screen until theme is ready
   if (!isThemeReady) {

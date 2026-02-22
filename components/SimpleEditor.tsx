@@ -2,6 +2,7 @@
 
 import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
+import type { editor as MonacoEditor } from 'monaco-editor';
 import { FiCopy, FiRotateCcw } from 'react-icons/fi';
 import { MERMAID_LIGHT_THEME, MERMAID_DARK_THEME } from '@/lib/monaco-themes';
 import { toast } from "../lib/toast-utils";
@@ -22,7 +23,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
   onChange, 
   theme = 'light'
 }, ref) => {
-  const editorRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const editorRef = useRef<MonacoEditor.IStandaloneCodeEditor | null>(null);
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({

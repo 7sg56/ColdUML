@@ -1,7 +1,23 @@
 import { insertTextAtPosition, getCursorOffset, offsetToPosition } from './editor-utils';
+import type * as Monaco from 'monaco-editor';
+
+// Mock types to help with type assertions
+type MockEditor = {
+  getModel: jest.Mock;
+  getPosition: jest.Mock;
+  executeEdits: jest.Mock;
+  setPosition: jest.Mock;
+  focus: jest.Mock;
+};
+
+type MockModel = {
+  getLineContent: jest.Mock;
+  getOffsetAt: jest.Mock;
+  getPositionAt: jest.Mock;
+};
 
 // Mock Monaco and Editor interfaces
-const mockEditor = {
+const mockEditor: MockEditor = {
   getModel: jest.fn(),
   getPosition: jest.fn(),
   executeEdits: jest.fn(),
@@ -9,7 +25,7 @@ const mockEditor = {
   focus: jest.fn(),
 };
 
-const mockModel = {
+const mockModel: MockModel = {
   getLineContent: jest.fn(),
   getOffsetAt: jest.fn(),
   getPositionAt: jest.fn(),
@@ -33,12 +49,13 @@ const mockMonaco = {
 describe('editor-utils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (window as any).monaco = mockMonaco;
+    // Use type assertion to bypass strict type checking for the mock assignment
+    window.monaco = mockMonaco as unknown as typeof Monaco;
     mockEditor.getModel.mockReturnValue(mockModel);
   });
 
   afterEach(() => {
-    delete (window as any).monaco;
+    window.monaco = undefined;
   });
 
   describe('insertTextAtPosition', () => {
@@ -46,7 +63,7 @@ describe('editor-utils', () => {
       const currentPos = new mockMonaco.Position(1, 1);
       mockEditor.getPosition.mockReturnValue(currentPos);
 
-      insertTextAtPosition(mockEditor as any, 'hello');
+      insertTextAtPosition(mockEditor as unknown as Monaco.editor.IStandaloneCodeEditor, 'hello');
 
       expect(mockEditor.executeEdits).toHaveBeenCalledWith('insert-template', [
         expect.objectContaining({
@@ -58,7 +75,7 @@ describe('editor-utils', () => {
 
       // Verify Range arguments
       const call = mockEditor.executeEdits.mock.calls[0];
-      const op = call[1][0];
+      const op = call[1][0] as { range: { startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number } };
       expect(op.range.startLineNumber).toBe(1);
       expect(op.range.startColumn).toBe(1);
       expect(op.range.endLineNumber).toBe(1);
@@ -71,10 +88,10 @@ describe('editor-utils', () => {
     it('should insert text at specific position', () => {
       const targetPos = new mockMonaco.Position(2, 5);
 
-      insertTextAtPosition(mockEditor as any, 'world', targetPos as any);
+      insertTextAtPosition(mockEditor as unknown as Monaco.editor.IStandaloneCodeEditor, 'world', targetPos as unknown as Monaco.Position);
 
       const call = mockEditor.executeEdits.mock.calls[0];
-      const op = call[1][0];
+      const op = call[1][0] as { range: { startLineNumber: number, startColumn: number, endLineNumber: number, endColumn: number } };
       expect(op.range.startLineNumber).toBe(2);
       expect(op.range.startColumn).toBe(5);
       expect(op.range.endLineNumber).toBe(2);
@@ -86,7 +103,7 @@ describe('editor-utils', () => {
       mockEditor.getPosition.mockReturnValue(currentPos);
       const text = 'line1\nline2';
 
-      insertTextAtPosition(mockEditor as any, text);
+      insertTextAtPosition(mockEditor as unknown as Monaco.editor.IStandaloneCodeEditor, text);
 
       expect(mockEditor.setPosition).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -97,8 +114,8 @@ describe('editor-utils', () => {
     });
 
     it('should do nothing if monaco is not defined', () => {
-      delete (window as any).monaco;
-      insertTextAtPosition(mockEditor as any, 'test');
+      window.monaco = undefined;
+      insertTextAtPosition(mockEditor as unknown as Monaco.editor.IStandaloneCodeEditor, 'test');
       expect(mockEditor.executeEdits).not.toHaveBeenCalled();
     });
   });
@@ -109,14 +126,14 @@ describe('editor-utils', () => {
       mockEditor.getPosition.mockReturnValue(pos);
       mockModel.getOffsetAt.mockReturnValue(10);
 
-      const offset = getCursorOffset(mockEditor as any);
+      const offset = getCursorOffset(mockEditor as unknown as Monaco.editor.IStandaloneCodeEditor);
       expect(offset).toBe(10);
       expect(mockModel.getOffsetAt).toHaveBeenCalledWith(pos);
     });
 
     it('should return 0 if no model or position', () => {
       mockEditor.getModel.mockReturnValue(null);
-      expect(getCursorOffset(mockEditor as any)).toBe(0);
+      expect(getCursorOffset(mockEditor as unknown as Monaco.editor.IStandaloneCodeEditor)).toBe(0);
     });
   });
 
@@ -125,7 +142,7 @@ describe('editor-utils', () => {
       const pos = { lineNumber: 1, column: 5 };
       mockModel.getPositionAt.mockReturnValue(pos);
 
-      const result = offsetToPosition(mockModel as any, 10);
+      const result = offsetToPosition(mockModel as unknown as Monaco.editor.ITextModel, 10);
       expect(result).toBe(pos);
       expect(mockModel.getPositionAt).toHaveBeenCalledWith(10);
     });

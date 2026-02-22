@@ -1,9 +1,15 @@
 import type * as Monaco from "monaco-editor";
 import type { RefObject } from "react";
 
+declare global {
+  interface Window {
+    monaco: typeof Monaco | undefined;
+  }
+}
+
 // Helper to get typed monaco instance from window
 function getMonaco(): typeof Monaco | undefined {
-  return (window as any).monaco;
+  return window.monaco;
 }
 
 /**

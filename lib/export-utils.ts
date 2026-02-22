@@ -302,6 +302,95 @@ function generateFilename(extension: string): string {
   return `mermaid-diagram-${timestamp}.${extension}`;
 }
 
+const INVALID_COLORS = ['none', 'transparent', '#ffffff', '#fff', 'white', 'context-fill', 'context-stroke'];
+
+/**
+ * Helper to normalize SVG element attributes for export
+ */
+function normalizeSVGElement(element: Element, lineColor: string, textColor: string, fillColor: string) {
+  const tagName = element.tagName.toLowerCase();
+
+  // Helper to normalize stroke
+  const normalizeStroke = (el: Element) => {
+    const stroke = el.getAttribute('stroke');
+    if (!stroke || INVALID_COLORS.includes(stroke)) {
+      el.setAttribute('stroke', lineColor);
+    }
+    const strokeWidth = el.getAttribute('stroke-width');
+    if (!strokeWidth || strokeWidth === '0') {
+      el.setAttribute('stroke-width', '2');
+    }
+  };
+
+  // Helper to ensure consistent stroke color if present
+  const ensureConsistentStroke = (el: Element) => {
+    const stroke = el.getAttribute('stroke');
+    if (stroke && stroke !== 'none' && INVALID_COLORS.includes(stroke)) {
+      el.setAttribute('stroke', lineColor);
+    }
+  };
+
+  // Handle markers (recursive for children)
+  if (tagName === 'marker') {
+    const markerPaths = element.querySelectorAll('path');
+    markerPaths.forEach((markerPath) => {
+      const fill = markerPath.getAttribute('fill');
+      // Arrow markers should match the line color
+      if (!fill || INVALID_COLORS.includes(fill)) {
+        markerPath.setAttribute('fill', lineColor);
+      }
+      ensureConsistentStroke(markerPath);
+    });
+
+    const markerPolygons = element.querySelectorAll('polygon');
+    markerPolygons.forEach((markerPolygon) => {
+      const fill = markerPolygon.getAttribute('fill');
+      if (!fill || INVALID_COLORS.includes(fill)) {
+        markerPolygon.setAttribute('fill', lineColor);
+      }
+    });
+    return;
+  }
+
+  // Handle paths separately due to fill check
+  if (tagName === 'path') {
+    const fill = element.getAttribute('fill');
+
+    // For paths that represent lines (fill is none or missing), normalize stroke
+    if (!fill || fill === 'none') {
+      normalizeStroke(element);
+    } else {
+      // For filled paths (shapes), ensure stroke is consistent if present
+      ensureConsistentStroke(element);
+    }
+    return;
+  }
+
+  // Handle text
+  if (tagName === 'text' || tagName === 'tspan') {
+    const fill = element.getAttribute('fill');
+    if (!fill || INVALID_COLORS.includes(fill) || fill === 'currentColor') {
+      element.setAttribute('fill', textColor);
+    }
+    return;
+  }
+
+  // General handling for shapes
+  if (tagName === 'line' || tagName === 'polyline') {
+    normalizeStroke(element);
+  } else {
+    ensureConsistentStroke(element);
+  }
+
+  // Handle fill for shapes
+  if (tagName === 'polygon') {
+    const fill = element.getAttribute('fill');
+    if (fill && INVALID_COLORS.includes(fill)) {
+      element.setAttribute('fill', fillColor);
+    }
+  }
+}
+
 /**
  * Render diagram with light theme for export
  * This ensures all exports use a light/white background regardless of current theme
@@ -432,133 +521,24 @@ async function renderDiagramForExport(mermaidContent: string): Promise<SVGElemen
           const lineColor = '#333333'; // Dark color for lines/borders - matches themeVariables
           const textColor = '#000000'; // Black text - matches themeVariables
           const fillColor = '#ffffff'; // White fill for shapes - matches themeVariables
-          const invalidColors = ['none', 'transparent', '#ffffff', '#fff', 'white', 'context-fill', 'context-stroke'];
           
-          // Normalize all paths (lines, arrows, connections) to use consistent stroke color
-          const allPaths = svgElement.querySelectorAll('path');
-          allPaths.forEach((path) => {
-            const stroke = path.getAttribute('stroke');
-            const fill = path.getAttribute('fill');
-            const strokeWidth = path.getAttribute('stroke-width');
-            
-            // For paths that represent lines (fill is none or missing), normalize stroke
-            if (fill === 'none' || !fill) {
-              if (!stroke || invalidColors.includes(stroke)) {
-                path.setAttribute('stroke', lineColor);
-              }
-              if (!strokeWidth || strokeWidth === '0') {
-                path.setAttribute('stroke-width', '2');
-              }
-            } else {
-              // For filled paths (shapes), ensure stroke is consistent if present
-              if (stroke && stroke !== 'none' && invalidColors.includes(stroke)) {
-                path.setAttribute('stroke', lineColor);
-              }
-            }
-          });
+          // Elements to normalize
+          const selector = [
+            'path',
+            'line',
+            'polyline',
+            'polygon',
+            'rect:not([data-background])',
+            'circle',
+            'ellipse',
+            'marker',
+            'text',
+            'tspan'
+          ].join(',');
 
-          // Normalize all line elements
-          const allLines = svgElement.querySelectorAll('line');
-          allLines.forEach((line) => {
-            const stroke = line.getAttribute('stroke');
-            if (!stroke || invalidColors.includes(stroke)) {
-              line.setAttribute('stroke', lineColor);
-            }
-            if (!line.getAttribute('stroke-width') || line.getAttribute('stroke-width') === '0') {
-              line.setAttribute('stroke-width', '2');
-            }
-          });
-
-          // Normalize all polylines
-          const allPolylines = svgElement.querySelectorAll('polyline');
-          allPolylines.forEach((polyline) => {
-            const stroke = polyline.getAttribute('stroke');
-            if (!stroke || invalidColors.includes(stroke)) {
-              polyline.setAttribute('stroke', lineColor);
-            }
-            if (!polyline.getAttribute('stroke-width') || polyline.getAttribute('stroke-width') === '0') {
-              polyline.setAttribute('stroke-width', '2');
-            }
-          });
-
-          // Normalize polygons - ensure consistent stroke colors
-          const allPolygons = svgElement.querySelectorAll('polygon');
-          allPolygons.forEach((polygon) => {
-            const stroke = polygon.getAttribute('stroke');
-            if (stroke && stroke !== 'none' && invalidColors.includes(stroke)) {
-              polygon.setAttribute('stroke', lineColor);
-            }
-            // Ensure filled polygons use consistent fill if not already set properly
-            const fill = polygon.getAttribute('fill');
-            if (fill && invalidColors.includes(fill)) {
-              polygon.setAttribute('fill', fillColor);
-            }
-          });
-
-          // Normalize rectangles - ensure consistent borders
-          const allRects = svgElement.querySelectorAll('rect:not([data-background])');
-          allRects.forEach((rect) => {
-            const stroke = rect.getAttribute('stroke');
-            if (stroke && stroke !== 'none' && invalidColors.includes(stroke)) {
-              rect.setAttribute('stroke', lineColor);
-            }
-          });
-
-          // Normalize circles and ellipses
-          const allCircles = svgElement.querySelectorAll('circle, ellipse');
-          allCircles.forEach((circle) => {
-            const stroke = circle.getAttribute('stroke');
-            if (stroke && stroke !== 'none' && invalidColors.includes(stroke)) {
-              circle.setAttribute('stroke', lineColor);
-            }
-          });
-
-          // Normalize edge paths (used in flowcharts/activity/class diagrams)
-          const edgePaths = svgElement.querySelectorAll('.edgePath path, .flowchart-link path, .edge path, .relation path');
-          edgePaths.forEach((path) => {
-            const stroke = path.getAttribute('stroke');
-            if (!stroke || invalidColors.includes(stroke)) {
-              path.setAttribute('stroke', lineColor);
-            }
-            if (!path.getAttribute('stroke-width') || path.getAttribute('stroke-width') === '0') {
-              path.setAttribute('stroke-width', '2');
-            }
-          });
-
-          // Normalize arrow markers (arrowheads) to match line colors
-          const markers = svgElement.querySelectorAll('marker');
-          markers.forEach((marker) => {
-            const markerPaths = marker.querySelectorAll('path');
-            markerPaths.forEach((markerPath) => {
-              const fill = markerPath.getAttribute('fill');
-              const stroke = markerPath.getAttribute('stroke');
-              
-              // Arrow markers should match the line color
-              if (!fill || invalidColors.includes(fill)) {
-                markerPath.setAttribute('fill', lineColor);
-              }
-              if (stroke && stroke !== 'none' && invalidColors.includes(stroke)) {
-                markerPath.setAttribute('stroke', lineColor);
-              }
-            });
-            
-            // Normalize polygon markers
-            const markerPolygons = marker.querySelectorAll('polygon');
-            markerPolygons.forEach((markerPolygon) => {
-              const fill = markerPolygon.getAttribute('fill');
-              if (!fill || invalidColors.includes(fill)) {
-                markerPolygon.setAttribute('fill', lineColor);
-              }
-            });
-          });
-
-          // Normalize text colors for consistency
-          const allText = svgElement.querySelectorAll('text, tspan');
-          allText.forEach((text) => {
-            const fill = text.getAttribute('fill');
-            if (!fill || invalidColors.includes(fill) || fill === 'currentColor') {
-              text.setAttribute('fill', textColor);
-            }
+          const allElements = svgElement.querySelectorAll(selector);
+          allElements.forEach((el) => {
+            normalizeSVGElement(el, lineColor, textColor, fillColor);
           });
 
           // Clone the SVG before cleanup

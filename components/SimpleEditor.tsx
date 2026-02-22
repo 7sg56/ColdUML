@@ -17,6 +17,59 @@ export interface SimpleEditorRef {
   focus: () => void;
 }
 
+// Memoized editor options to prevent unnecessary re-renders
+const EDITOR_OPTIONS = {
+  minimap: { enabled: false },
+  scrollBeyondLastLine: false,
+  fontSize: 14,
+  lineNumbers: 'on',
+  roundedSelection: false,
+  automaticLayout: true,
+  tabSize: 2,
+  insertSpaces: true,
+  wordWrap: 'off',
+  selectOnLineNumbers: true,
+  cursorStyle: 'line',
+  cursorBlinking: 'blink',
+  renderWhitespace: 'selection',
+  contextmenu: true,
+  smoothScrolling: true,
+  overviewRulerBorder: false,
+  readOnly: false,
+  domReadOnly: false,
+  cursorSmoothCaretAnimation: 'on',
+  // Disable ALL suggestions and autocomplete
+  quickSuggestions: false,
+  suggestOnTriggerCharacters: false,
+  acceptSuggestionOnEnter: 'off',
+  wordBasedSuggestions: 'off',
+  suggest: {
+    showWords: false,
+    showSnippets: false
+  },
+  parameterHints: {
+    enabled: false
+  },
+  hover: {
+    enabled: false
+  },
+  folding: false,
+  scrollbar: {
+    vertical: 'auto',
+    horizontal: 'auto',
+    verticalScrollbarSize: 8,
+    horizontalScrollbarSize: 8,
+    useShadows: false,
+    verticalHasArrows: false,
+    horizontalHasArrows: false
+  },
+  find: {
+    addExtraSpaceOnTop: false,
+    autoFindInSelection: 'never',
+    seedSearchStringFromSelection: 'always'
+  }
+};
+
 const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({ 
   content, 
   onChange, 
@@ -214,58 +267,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
             theme={theme === 'dark' ? 'mermaid-dark' : 'mermaid-light'}
-            options={{
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              fontSize: 14,
-              lineNumbers: 'on',
-              roundedSelection: false,
-              automaticLayout: true,
-              tabSize: 2,
-              insertSpaces: true,
-              wordWrap: 'off',
-              selectOnLineNumbers: true,
-              cursorStyle: 'line',
-              cursorBlinking: 'blink',
-              renderWhitespace: 'selection',
-              contextmenu: true,
-              smoothScrolling: true,
-              overviewRulerBorder: false,
-              readOnly: false,
-              domReadOnly: false,
-              cursorSmoothCaretAnimation: 'on',
-              // Disable ALL suggestions and autocomplete
-              quickSuggestions: false,
-              suggestOnTriggerCharacters: false,
-              acceptSuggestionOnEnter: 'off',
-              wordBasedSuggestions: 'off',
-              suggest: {
-                
-                showWords: false,
-                showSnippets: false
-              },
-              parameterHints: {
-                enabled: false
-              },
-              hover: {
-                enabled: false
-              },
-              folding: false,
-              scrollbar: {
-                vertical: 'auto',
-                horizontal: 'auto',
-                verticalScrollbarSize: 8,
-                horizontalScrollbarSize: 8,
-                useShadows: false,
-                verticalHasArrows: false,
-                horizontalHasArrows: false
-              },
-              find: {
-                addExtraSpaceOnTop: false,
-                autoFindInSelection: 'never',
-                seedSearchStringFromSelection: 'always'
-              }
-            }}
+            options={EDITOR_OPTIONS}
           />
         </div>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
-import Editor, { OnMount, OnChange } from '@monaco-editor/react';
+import Editor, { OnMount, OnChange, useMonaco } from '@monaco-editor/react';
 import { FiCopy, FiRotateCcw } from 'react-icons/fi';
 import { MERMAID_LIGHT_THEME, MERMAID_DARK_THEME } from '@/lib/monaco-themes';
 import { toast } from "../lib/toast-utils";
@@ -23,6 +23,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
   theme = 'light'
 }, ref) => {
   const editorRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const monaco = useMonaco();
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
@@ -125,7 +126,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     try {
       await navigator.clipboard.writeText(content);
       toast.success('Code copied to clipboard');
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy code');
     }
   }, [content]);
@@ -160,14 +161,11 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
 
   // Update theme when it changes
   useEffect(() => {
-    if (editorRef.current && typeof window !== 'undefined') {
-      const monaco = (window as any).monaco; // eslint-disable-line @typescript-eslint/no-explicit-any
-      if (monaco && monaco.editor) {
-        // Themes are already defined in handleEditorDidMount
-        monaco.editor.setTheme(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
-      }
+    if (monaco && monaco.editor) {
+      // Themes are already defined in handleEditorDidMount
+      monaco.editor.setTheme(theme === 'dark' ? 'mermaid-dark' : 'mermaid-light');
     }
-  }, [theme]);
+  }, [theme, monaco]);
 
   // Remove error decoration logic - errors are only shown in preview now
   // This prevents interference with editor focus and cursor behavior

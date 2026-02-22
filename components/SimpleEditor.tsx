@@ -5,6 +5,7 @@ import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { FiCopy, FiRotateCcw } from 'react-icons/fi';
 import { MERMAID_LIGHT_THEME, MERMAID_DARK_THEME } from '@/lib/monaco-themes';
 import { toast } from "../lib/toast-utils";
+import { DEFAULT_UML_CONTENT } from '@/lib/constants';
 
 interface SimpleEditorProps {
   content: string;
@@ -132,30 +133,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
 
   // Reset editor to default content
   const handleResetEditor = useCallback(() => {
-    const defaultContent = `classDiagram
-    class Animal {
-        +String name
-        +int age
-        +makeSound()
-        +move()
-    }
-    
-    class Dog {
-        +String breed
-        +bark()
-        +wagTail()
-    }
-    
-    class Cat {
-        +String color
-        +meow()
-        +purr()
-    }
-    
-    Animal <|-- Dog
-    Animal <|-- Cat`;
-    
-    onChange(defaultContent);
+    onChange(DEFAULT_UML_CONTENT);
   }, [onChange]);
 
   // Update theme when it changes

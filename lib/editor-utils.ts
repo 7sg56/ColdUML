@@ -1,30 +1,29 @@
+import type * as Monaco from "monaco-editor";
+import type { RefObject } from "react";
+
+// Helper to get typed monaco instance from window
+function getMonaco(): typeof Monaco | undefined {
+  return (window as any).monaco;
+}
+
 /**
  * Insert text at a specific position in the Monaco editor
  */
 export function insertTextAtPosition(
-  editor: Record<string, unknown>, // monaco.editor.IStandaloneCodeEditor
+  editor: Monaco.editor.IStandaloneCodeEditor,
   text: string,
-  position?: Record<string, unknown> // monaco.Position
+  position?: Monaco.Position
 ): void {
-  const monaco = (window as unknown as { monaco?: Record<string, unknown> })
-    .monaco;
-  if (!monaco || typeof monaco !== "object") return;
+  const monaco = getMonaco();
+  if (!monaco) return;
 
-  if (typeof editor.getModel !== "function") return;
-  const model = (editor.getModel as () => Record<string, unknown> | null)();
+  const model = editor.getModel();
   if (!model) return;
 
-  if (typeof editor.getPosition !== "function") return;
-  const insertPosition =
-    position || (editor.getPosition as () => Record<string, unknown> | null)();
+  const insertPosition = position || editor.getPosition();
   if (!insertPosition) return;
 
-  if (typeof monaco.Range !== "function") return;
-  const Range = monaco.Range as new (...args: unknown[]) => Record<
-    string,
-    unknown
-  >;
-  const range = new Range(
+  const range = new monaco.Range(
     insertPosition.lineNumber,
     insertPosition.column,
     insertPosition.lineNumber,
@@ -37,86 +36,56 @@ export function insertTextAtPosition(
     forceMoveMarkers: true,
   };
 
-  if (typeof editor.executeEdits === "function") {
-    (editor.executeEdits as (source: string, operations: unknown[]) => void)(
-      "insert-template",
-      [operation]
-    );
-  }
+  editor.executeEdits("insert-template", [operation]);
 
   // Move cursor to end of inserted text
   const lines = text.split("\n");
   const lastLine = lines[lines.length - 1];
 
-  if (typeof monaco.Position === "function") {
-    const Position = monaco.Position as new (...args: unknown[]) => Record<
-      string,
-      unknown
-    >;
-    const newPosition = new Position(
-      (insertPosition.lineNumber as number) + lines.length - 1,
-      lines.length === 1
-        ? (insertPosition.column as number) + lastLine.length
-        : lastLine.length + 1
-    );
+  const newPosition = new monaco.Position(
+    insertPosition.lineNumber + lines.length - 1,
+    lines.length === 1
+      ? insertPosition.column + lastLine.length
+      : lastLine.length + 1
+  );
 
-    if (typeof editor.setPosition === "function") {
-      (editor.setPosition as (position: Record<string, unknown>) => void)(
-        newPosition
-      );
-    }
-  }
-
-  if (typeof editor.focus === "function") {
-    (editor.focus as () => void)();
-  }
+  editor.setPosition(newPosition);
+  editor.focus();
 }
 
 /**
  * Get the current cursor position as an offset from the beginning of the document
  */
-export function getCursorOffset(editor: Record<string, unknown>): number {
-  if (
-    typeof editor.getModel !== "function" ||
-    typeof editor.getPosition !== "function"
-  )
-    return 0;
+export function getCursorOffset(
+  editor: Monaco.editor.IStandaloneCodeEditor
+): number {
+  const model = editor.getModel();
+  const position = editor.getPosition();
 
-  const model = (editor.getModel as () => Record<string, unknown> | null)();
-  const position = (
-    editor.getPosition as () => Record<string, unknown> | null
-  )();
+  if (!model || !position) return 0;
 
-  if (!model || !position || typeof model.getOffsetAt !== "function") return 0;
-
-  return (model.getOffsetAt as (position: Record<string, unknown>) => number)(
-    position
-  );
+  return model.getOffsetAt(position);
 }
 
 /**
  * Convert an offset to a Monaco Position
  */
 export function offsetToPosition(
-  model: Record<string, unknown>,
+  model: Monaco.editor.ITextModel,
   offset: number
-): Record<string, unknown> | null {
-  if (typeof model.getPositionAt !== "function") return null;
-  return (model.getPositionAt as (offset: number) => Record<string, unknown>)(
-    offset
-  );
+): Monaco.Position | null {
+  return model.getPositionAt(offset);
 }
 
 /**
  * Insert text at a specific offset in the editor content
  */
 export function insertTextAtOffset(
-  editor: Record<string, unknown>,
+  editor: Monaco.editor.IStandaloneCodeEditor,
   text: string,
   offset: number
 ): void {
-  if (typeof editor.getModel !== "function") return;
-  const model = (editor.getModel as () => Record<string, unknown> | null)();
+  const model = editor.getModel();
   if (!model) return;
 
   const position = offsetToPosition(model, offset);
@@ -129,73 +98,38 @@ export function insertTextAtOffset(
  * Get the editor reference for external use
  */
 export function getEditorInstance(
-  editorRef: React.RefObject<Record<string, unknown>>
-): Record<string, unknown> | null {
+  editorRef: RefObject<Monaco.editor.IStandaloneCodeEditor>
+): Monaco.editor.IStandaloneCodeEditor | null {
   return editorRef.current;
 }
 
 /**
  * Configure editor for optimal UML editing experience
  */
-export function configureEditorForUML(editor: Record<string, unknown>): void {
-  const monaco = (window as unknown as { monaco?: Record<string, unknown> })
-    .monaco;
-  if (!monaco || typeof monaco !== "object") return;
-  if (
-    typeof editor.addCommand !== "function" ||
-    typeof editor.trigger !== "function"
-  )
-    return;
+export function configureEditorForUML(
+  editor: Monaco.editor.IStandaloneCodeEditor
+): void {
+  const monaco = getMonaco();
+  if (!monaco) return;
 
-  const KeyMod = monaco.KeyMod as Record<string, unknown>;
-  const KeyCode = monaco.KeyCode as Record<string, unknown>;
-
-  if (!KeyMod || !KeyCode) return;
+  const KeyMod = monaco.KeyMod;
+  const KeyCode = monaco.KeyCode;
 
   // Add custom commands for UML editing
-  (editor.addCommand as (key: unknown, handler: () => void) => void)(
-    (KeyMod.CtrlCmd as number) | (KeyCode.KeyD as number),
-    () => {
-      // Duplicate line
-      (
-        editor.trigger as (
-          source: string,
-          action: string,
-          args: Record<string, unknown>
-        ) => void
-      )("keyboard", "editor.action.copyLinesDownAction", {});
-    }
-  );
+  editor.addCommand(KeyMod.CtrlCmd | KeyCode.KeyD, () => {
+    // Duplicate line
+    editor.trigger("keyboard", "editor.action.copyLinesDownAction", {});
+  });
 
-  (editor.addCommand as (key: unknown, handler: () => void) => void)(
-    (KeyMod.CtrlCmd as number) | (KeyCode.Slash as number),
-    () => {
-      // Toggle line comment
-      (
-        editor.trigger as (
-          source: string,
-          action: string,
-          args: Record<string, unknown>
-        ) => void
-      )("keyboard", "editor.action.commentLine", {});
-    }
-  );
+  editor.addCommand(KeyMod.CtrlCmd | KeyCode.Slash, () => {
+    // Toggle line comment
+    editor.trigger("keyboard", "editor.action.commentLine", {});
+  });
 
-  (editor.addCommand as (key: unknown, handler: () => void) => void)(
-    (KeyMod.CtrlCmd as number) |
-      (KeyMod.Shift as number) |
-      (KeyCode.KeyK as number),
-    () => {
-      // Delete line
-      (
-        editor.trigger as (
-          source: string,
-          action: string,
-          args: Record<string, unknown>
-        ) => void
-      )("keyboard", "editor.action.deleteLines", {});
-    }
-  );
+  editor.addCommand(KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyK, () => {
+    // Delete line
+    editor.trigger("keyboard", "editor.action.deleteLines", {});
+  });
 }
 
 /**
@@ -232,29 +166,18 @@ export function formatMermaidCode(code: string): string {
  * Insert template with smart positioning and formatting
  */
 export function insertTemplateAtCursor(
-  editor: Record<string, unknown>,
+  editor: Monaco.editor.IStandaloneCodeEditor,
   template: string
 ): void {
-  if (
-    typeof editor.getModel !== "function" ||
-    typeof editor.getPosition !== "function"
-  )
-    return;
-
-  const model = (editor.getModel as () => Record<string, unknown> | null)();
-  const position = (
-    editor.getPosition as () => Record<string, unknown> | null
-  )();
+  const model = editor.getModel();
+  const position = editor.getPosition();
 
   if (!model || !position) return;
-  if (typeof model.getLineContent !== "function") return;
 
   // Get current line content to determine if we need a new line
-  const currentLine = (model.getLineContent as (lineNumber: number) => string)(
-    position.lineNumber as number
-  );
+  const currentLine = model.getLineContent(position.lineNumber);
   const isLineEmpty = currentLine.trim() === "";
-  const isAtEndOfLine = (position.column as number) > currentLine.length;
+  const isAtEndOfLine = position.column > currentLine.length;
 
   // Prepare the template text with appropriate spacing
   let textToInsert = template;
@@ -275,17 +198,11 @@ export function insertTemplateAtCursor(
 /**
  * Check if the current cursor position is appropriate for template insertion
  */
-export function canInsertTemplate(editor: Record<string, unknown>): boolean {
-  if (
-    typeof editor.getModel !== "function" ||
-    typeof editor.getPosition !== "function"
-  )
-    return false;
-
-  const model = (editor.getModel as () => Record<string, unknown> | null)();
-  const position = (
-    editor.getPosition as () => Record<string, unknown> | null
-  )();
+export function canInsertTemplate(
+  editor: Monaco.editor.IStandaloneCodeEditor
+): boolean {
+  const model = editor.getModel();
+  const position = editor.getPosition();
 
   if (!model || !position) return false;
 
@@ -296,16 +213,18 @@ export function canInsertTemplate(editor: Record<string, unknown>): boolean {
 /**
  * Get context information about the cursor position for smart template insertion
  */
-export function getCursorContext(editor: Record<string, unknown>): {
+export function getCursorContext(
+  editor: Monaco.editor.IStandaloneCodeEditor
+): {
   isInClass: boolean;
   isAtLineStart: boolean;
   isAtLineEnd: boolean;
   currentIndentation: number;
 } {
-  if (
-    typeof editor.getModel !== "function" ||
-    typeof editor.getPosition !== "function"
-  ) {
+  const model = editor.getModel();
+  const position = editor.getPosition();
+
+  if (!model || !position) {
     return {
       isInClass: false,
       isAtLineStart: true,
@@ -314,34 +233,13 @@ export function getCursorContext(editor: Record<string, unknown>): {
     };
   }
 
-  const model = (editor.getModel as () => Record<string, unknown> | null)();
-  const position = (
-    editor.getPosition as () => Record<string, unknown> | null
-  )();
-
-  if (!model || !position || typeof model.getLineContent !== "function") {
-    return {
-      isInClass: false,
-      isAtLineStart: true,
-      isAtLineEnd: true,
-      currentIndentation: 0,
-    };
-  }
-
-  const currentLine = (model.getLineContent as (lineNumber: number) => string)(
-    position.lineNumber as number
-  );
-  const textBeforeCursor = currentLine.substring(
-    0,
-    (position.column as number) - 1
-  );
+  const currentLine = model.getLineContent(position.lineNumber);
+  const textBeforeCursor = currentLine.substring(0, position.column - 1);
 
   // Check if we're inside a class definition by looking at previous lines
   let isInClass = false;
-  for (let i = (position.lineNumber as number) - 1; i >= 1; i--) {
-    const line = (model.getLineContent as (lineNumber: number) => string)(
-      i
-    ).trim();
+  for (let i = position.lineNumber - 1; i >= 1; i--) {
+    const line = model.getLineContent(i).trim();
     if (line.startsWith("class ") && line.includes("{")) {
       isInClass = true;
       break;
@@ -354,7 +252,7 @@ export function getCursorContext(editor: Record<string, unknown>): {
   return {
     isInClass,
     isAtLineStart: textBeforeCursor.trim() === "",
-    isAtLineEnd: (position.column as number) > currentLine.length,
+    isAtLineEnd: position.column > currentLine.length,
     currentIndentation:
       textBeforeCursor.length - textBeforeCursor.trimStart().length,
   };

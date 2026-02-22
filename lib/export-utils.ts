@@ -589,12 +589,15 @@ async function renderDiagramForExport(mermaidContent: string): Promise<SVGElemen
 }
 
 /**
- * Export diagram as SVG
- * Always exports with light theme for better visibility
+ * Shared logic for exporting diagrams in different formats
  */
-export async function exportAsSVG(mermaidContent: string): Promise<ExportResult> {
+async function executeExport(
+  mermaidContent: string,
+  extension: 'svg' | 'png',
+  processBlob: (svgString: string) => Promise<Blob>
+): Promise<ExportResult> {
+  const format = extension.toUpperCase();
   try {
-    
     // Check Mermaid content
     if (!mermaidContent || !mermaidContent.trim()) {
       return {
@@ -602,7 +605,7 @@ export async function exportAsSVG(mermaidContent: string): Promise<ExportResult>
         error: 'No diagram content found to export. Please ensure the editor has valid Mermaid syntax.'
       };
     }
-    
+
     // Render diagram with light theme for export
     const svg = await renderDiagramForExport(mermaidContent.trim());
     if (!svg) {
@@ -611,7 +614,7 @@ export async function exportAsSVG(mermaidContent: string): Promise<ExportResult>
         error: 'Failed to render diagram for export. Please check your Mermaid syntax and try again.'
       };
     }
-    
+
     // Additional validation: ensure the SVG has actual content
     const hasContent = svg.children.length > 0 && svg.innerHTML.trim().length > 50;
     if (!hasContent) {
@@ -620,13 +623,13 @@ export async function exportAsSVG(mermaidContent: string): Promise<ExportResult>
         error: 'Diagram appears to be empty. Please ensure the diagram is fully rendered before exporting.'
       };
     }
-    
+
     const svgString = prepareSVGForExport(svg);
-    const filename = generateFilename('svg');
-    
+    const filename = generateFilename(extension);
+
     try {
-      const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-      
+      const blob = await processBlob(svgString);
+
       try {
         await downloadBlob(blob, filename);
         return {
@@ -636,34 +639,60 @@ export async function exportAsSVG(mermaidContent: string): Promise<ExportResult>
       } catch (downloadError) {
         // Check if it's a NotAllowedError or similar security error
         const errorMessage = downloadError instanceof Error ? downloadError.message : String(downloadError);
-        console.warn('Download error:', downloadError);
-        
+        console.warn(`${format} download error:`, downloadError);
+
         if (errorMessage.includes('NotAllowedError') || errorMessage.includes('not allowed')) {
           return {
             success: false,
             error: 'Download was blocked by browser security settings. Please check your browser permissions or try a different browser.'
           };
         }
-        
+
         return {
           success: false,
           error: errorMessage || 'Download failed. Please try again.'
         };
       }
-    } catch (blobError) {
-      console.error('Failed to create blob:', blobError);
+    } catch (error) {
+      console.error(`${format} processing error:`, error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
+      // Check if it's a security-related error (especially for PNG/Canvas)
+      if (errorMessage.includes('NotAllowedError') || errorMessage.includes('not allowed') || errorMessage.includes('security')) {
+        const securityError = extension === 'png'
+          ? 'PNG conversion was blocked by browser security settings. This may be due to canvas restrictions. Please try exporting as SVG instead.'
+          : 'Download was blocked by browser security settings. Please check your browser permissions or try a different browser.';
+
+        return {
+          success: false,
+          error: securityError
+        };
+      }
+
       return {
         success: false,
-        error: 'Failed to prepare file for download. Please try again.'
+        error: extension === 'png' ? `Failed to convert to PNG: ${errorMessage}` : (errorMessage || 'Failed to prepare file for download. Please try again.')
       };
     }
   } catch (error) {
-    console.error('SVG export error:', error);
+    console.error(`${format} export error:`, error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Failed to export SVG'
+      error: error instanceof Error ? error.message : `Failed to export ${format}`
     };
   }
+}
+
+/**
+ * Export diagram as SVG
+ * Always exports with light theme for better visibility
+ */
+export async function exportAsSVG(mermaidContent: string): Promise<ExportResult> {
+  return executeExport(
+    mermaidContent,
+    'svg',
+    async (svgString) => new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' })
+  );
 }
 
 /**
@@ -671,87 +700,11 @@ export async function exportAsSVG(mermaidContent: string): Promise<ExportResult>
  * Always exports with light theme for better visibility
  */
 export async function exportAsPNG(mermaidContent: string): Promise<ExportResult> {
-  try {
-    
-    // Check Mermaid content
-    if (!mermaidContent || !mermaidContent.trim()) {
-      return {
-        success: false,
-        error: 'No diagram content found to export. Please ensure the editor has valid Mermaid syntax.'
-      };
-    }
-    
-    // Render diagram with light theme for export
-    const svg = await renderDiagramForExport(mermaidContent.trim());
-    if (!svg) {
-      return {
-        success: false,
-        error: 'Failed to render diagram for export. Please check your Mermaid syntax and try again.'
-      };
-    }
-    
-    // Additional validation: ensure the SVG has actual content
-    const hasContent = svg.children.length > 0 && svg.innerHTML.trim().length > 50;
-    if (!hasContent) {
-      return {
-        success: false,
-        error: 'Diagram appears to be empty. Please ensure the diagram is fully rendered before exporting.'
-      };
-    }
-    
-    const svgString = prepareSVGForExport(svg);
-    const filename = generateFilename('png');
-    
-    try {
-      const pngBlob = await svgToPng(svgString);
-      
-      try {
-        await downloadBlob(pngBlob, filename);
-        return {
-          success: true,
-          filename
-        };
-      } catch (downloadError) {
-        // Check if it's a NotAllowedError or similar security error
-        const errorMessage = downloadError instanceof Error ? downloadError.message : String(downloadError);
-        console.warn('Download error:', downloadError);
-        
-        if (errorMessage.includes('NotAllowedError') || errorMessage.includes('not allowed')) {
-          return {
-            success: false,
-            error: 'Download was blocked by browser security settings. Please check your browser permissions or try a different browser.'
-          };
-        }
-        
-        return {
-          success: false,
-          error: errorMessage || 'Download failed. Please try again.'
-        };
-      }
-    } catch (conversionError) {
-      console.error('PNG conversion error:', conversionError);
-      const errorMessage = conversionError instanceof Error ? conversionError.message : String(conversionError);
-      
-      // Check if it's a security-related error
-      if (errorMessage.includes('NotAllowedError') || errorMessage.includes('not allowed') || errorMessage.includes('security')) {
-        return {
-          success: false,
-          error: 'PNG conversion was blocked by browser security settings. This may be due to canvas restrictions. Please try exporting as SVG instead.'
-        };
-      }
-      
-      return {
-        success: false,
-        error: `Failed to convert to PNG: ${errorMessage}`
-      };
-    }
-  } catch (error) {
-    console.error('PNG export error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to export PNG'
-    };
-  }
+  return executeExport(
+    mermaidContent,
+    'png',
+    async (svgString) => svgToPng(svgString)
+  );
 }
 
 /**

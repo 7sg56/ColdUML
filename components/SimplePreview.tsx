@@ -23,6 +23,7 @@ const SimplePreview = ({
   errorMessage = null,
 }: SimplePreviewProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const mermaidRef = useRef<typeof import("mermaid") | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isRendering, setIsRendering] = useState(false);
 
@@ -45,8 +46,14 @@ const SimplePreview = ({
       // Clear previous content
       containerRef.current.innerHTML = "";
 
-      // Dynamic import to ensure Mermaid is available
-      const mermaid = await import("mermaid");
+      // Get mermaid instance
+      let mermaid;
+      if (mermaidRef.current) {
+        mermaid = mermaidRef.current;
+      } else {
+        mermaid = await import("mermaid");
+        mermaidRef.current = mermaid;
+      }
 
       // Generate unique ID for this render
       const diagramId = `mermaid-diagram-${Date.now()}`;
@@ -121,6 +128,8 @@ const SimplePreview = ({
           const mermaid = await import("mermaid");
 
           if (isMounted) {
+            mermaidRef.current = mermaid;
+
             // Initialize with Vercel theme config
             mermaid.default.initialize({
               theme: theme === "dark" ? "dark" : "default",
@@ -161,7 +170,7 @@ const SimplePreview = ({
   // Re-initialize when theme changes
   useEffect(() => {
     if (isInitialized && typeof window !== "undefined") {
-      import("mermaid").then((mermaid) => {
+      const applyTheme = (mermaid: typeof import("mermaid")) => {
         // Clear any existing diagrams first
         if (containerRef.current) {
           containerRef.current.innerHTML = "";
@@ -184,7 +193,16 @@ const SimplePreview = ({
             tertiaryColor: theme === "dark" ? "#000000" : "#ffffff"
           }
         });
-      });
+      };
+
+      if (mermaidRef.current) {
+        applyTheme(mermaidRef.current);
+      } else {
+        import("mermaid").then((mermaid) => {
+          mermaidRef.current = mermaid;
+          applyTheme(mermaid);
+        });
+      }
     }
   }, [theme, isInitialized]);
 

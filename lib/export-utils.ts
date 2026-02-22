@@ -372,7 +372,7 @@ async function renderDiagramForExport(mermaidContent: string): Promise<SVGElemen
       });
 
       // Generate unique ID for this render
-      const diagramId = `mermaid-export-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+      const diagramId = `mermaid-export-${Date.now()}-${crypto.randomUUID()}`;
 
       // Render the diagram
       const renderResult = await mermaid.default.render(diagramId, mermaidContent.trim());

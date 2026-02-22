@@ -197,7 +197,7 @@ cooluml/
 ```typescript
 // Rendering settings
 - Theme: Matches app theme (dark/default)
-- Security: Loose (allows all diagram types)
+- Security: Strict (prevents XSS vulnerabilities)
 - Font: Arial for consistent rendering
 - Auto-scaling: Responsive SVG output
 ```

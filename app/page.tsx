@@ -100,15 +100,15 @@ function MermaidUMLEditor() {
     }
   }, []);
 
-  const handleRenderError = (error: string) => {
+  const handleRenderError = useCallback((error: string) => {
     // Set error message for editor display
     setErrorMessage(error);
-  };
+  }, []);
 
-  const handleRenderSuccess = () => {
+  const handleRenderSuccess = useCallback(() => {
     // Clear error message on successful render
     setErrorMessage(null);
-  };
+  }, []);
 
   // Show loading screen until theme is ready
   if (!isThemeReady) {

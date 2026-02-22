@@ -118,7 +118,7 @@ const SimplePreview = ({
             mermaid.default.initialize({
               theme: theme === "dark" ? "dark" : "default",
               startOnLoad: false,
-              securityLevel: "loose",
+              securityLevel: "strict",
               fontFamily: "Arial, sans-serif",
               fontSize: 10,
               themeVariables: {
@@ -163,7 +163,7 @@ const SimplePreview = ({
         mermaid.default.initialize({
           theme: theme === "dark" ? "dark" : "default",
           startOnLoad: false,
-          securityLevel: "loose",
+          securityLevel: "strict",
           fontFamily: "Arial, sans-serif",
           fontSize: 10,
           themeVariables: {

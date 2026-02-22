@@ -71,23 +71,18 @@ function MermaidUMLEditor() {
     }
   }, [theme]);
 
-  const handleDownloadPNG = async () => {
-    const result = await exportAsPNG(content);
+  const handleExport = async (exportFn: (content: string) => Promise<{ success: boolean; error?: string }>, format: string) => {
+    const result = await exportFn(content);
     if (result.success) {
-      toast.success("PNG exported successfully");
+      toast.success(`${format} exported successfully`);
     } else {
-      toast.error(result.error || "Failed to export PNG");
+      toast.error(result.error || `Failed to export ${format}`);
     }
   };
 
-  const handleDownloadSVG = async () => {
-    const result = await exportAsSVG(content);
-    if (result.success) {
-      toast.success("SVG exported successfully");
-    } else {
-      toast.error(result.error || "Failed to export SVG");
-    }
-  };
+  const handleDownloadPNG = () => handleExport(exportAsPNG, "PNG");
+
+  const handleDownloadSVG = () => handleExport(exportAsSVG, "SVG");
 
   const handleEditorContentChange = (newContent: string) => {
     setContent(newContent);

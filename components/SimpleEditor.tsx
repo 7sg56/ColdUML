@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useCallback, useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { FiCopy, FiRotateCcw } from 'react-icons/fi';
 import { MERMAID_LIGHT_THEME, MERMAID_DARK_THEME } from '@/lib/monaco-themes';
@@ -23,6 +23,26 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
   theme = 'light'
 }, ref) => {
   const editorRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [localContent, setLocalContent] = useState(content);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Sync local content with prop content when it changes externally
+  useEffect(() => {
+    setLocalContent(content);
+    // Clear any pending debounced updates if content is updated externally
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+  }, [content]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   // Expose methods to parent component
   useImperativeHandle(ref, () => ({
@@ -113,22 +133,32 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     editor.focus();
   }, [theme]);
 
-  // Handle content changes
+  // Handle content changes with debounce
   const handleEditorChange: OnChange = useCallback((value) => {
     if (value !== undefined) {
-      onChange(value);
+      setLocalContent(value);
+
+      // Clear existing timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Set new timer
+      debounceTimerRef.current = setTimeout(() => {
+        onChange(value);
+      }, 300);
     }
   }, [onChange]);
 
   // Copy code to clipboard
   const handleCopyCode = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      await navigator.clipboard.writeText(localContent);
       toast.success('Code copied to clipboard');
-    } catch (error) {
+    } catch {
       toast.error('Failed to copy code');
     }
-  }, [content]);
+  }, [localContent]);
 
   // Reset editor to default content
   const handleResetEditor = useCallback(() => {
@@ -155,6 +185,14 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
     Animal <|-- Dog
     Animal <|-- Cat`;
     
+    // Update local state immediately to reflect reset
+    setLocalContent(defaultContent);
+
+    // Clear any pending debounced updates
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
     onChange(defaultContent);
   }, [onChange]);
 
@@ -210,7 +248,7 @@ const SimpleEditor = forwardRef<SimpleEditorRef, SimpleEditorProps>(({
           <Editor
             height="100%"
             language="mermaid"
-            value={content}
+            value={localContent}
             onChange={handleEditorChange}
             onMount={handleEditorDidMount}
             theme={theme === 'dark' ? 'mermaid-dark' : 'mermaid-light'}
